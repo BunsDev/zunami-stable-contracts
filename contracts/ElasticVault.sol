@@ -14,7 +14,7 @@ import "./interfaces/IElasticVaultMigrator.sol";
 abstract contract ElasticVault is ElasticERC20, IElasticVault {
     using Math for uint256;
 
-    IERC20Metadata private _asset;
+    IERC20Metadata private immutable _asset;
 
     uint256 public constant FEE_DENOMINATOR = 1000000; // 100.0000%
 
@@ -64,32 +64,6 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     function changeFeeDistributor(address feeDistributor_) public onlyOwner {
         require(feeDistributor_ != address(0), "Zero fee distributor");
         feeDistributor = feeDistributor_;
-    }
-
-    function migrateToOtherAsset(address asset_, address priceOracle_, address migrator_) public onlyOwner {
-        // reset daily limits
-        dailyDepositTotal = 0;
-        dailyDepositCountingBlock = 0;
-        dailyWithdrawTotal = 0;
-        dailyWithdrawCountingBlock = 0;
-
-        // migrate old asset balance to new one
-        uint256 currentAssetVaultBalance = IERC20Metadata(asset()).balanceOf(address(this));
-        SafeERC20.safeIncreaseAllowance(
-            IERC20Metadata(asset()),
-            migrator_,
-            currentAssetVaultBalance
-        );
-        IElasticVaultMigrator(migrator_).migrate(
-            asset(),
-            asset_,
-            currentAssetVaultBalance
-        );
-        require(IERC20Metadata(asset_).balanceOf(address(this)) > 0, "Zero new asset balance after migration");
-
-        // change asset and it's price oracle
-        _asset = IERC20Metadata(asset_);
-        changePriceOracle(priceOracle_);
     }
 
     /** @dev See {IERC4262-asset}. */
