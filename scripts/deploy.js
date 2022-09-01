@@ -1,6 +1,6 @@
 async function main() {
     console.log('Start deploy');
-    const Uzd = await ethers.getContractFactory('Uzd');
+    const Uzd = await ethers.getContractFactory('UZD');
     const uzd = await Uzd.deploy();
 
     await uzd.deployed();
