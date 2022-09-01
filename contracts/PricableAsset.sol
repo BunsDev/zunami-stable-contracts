@@ -21,7 +21,7 @@ contract PricableAsset is Ownable {
     }
 
     function assetPrice() public view returns(uint256) {
-        return priceOracle.lpPrice();
+        return _cachedBlock != 0 ? _cachedAssetPrice : priceOracle.lpPrice();
     }
 
     function assetPriceCached() public returns(uint256) {
