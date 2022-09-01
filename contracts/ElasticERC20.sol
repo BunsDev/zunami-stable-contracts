@@ -5,11 +5,11 @@ import '@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol';
 import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/utils/math/Math.sol';
-import "./PricableAsset.sol";
+import './PricableAsset.sol';
 
 /**
  * @dev OpenZeppelin v4.7.0 ERC20 fork
-*/
+ */
 contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
     using Math for uint256;
 
@@ -25,33 +25,53 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
     string private _name;
     string private _symbol;
 
-    constructor(string memory name_, string memory symbol_, address priceOracle_)
-        PricableAsset(priceOracle_) {
-
+    constructor(
+        string memory name_,
+        string memory symbol_,
+        address priceOracle_
+    ) PricableAsset(priceOracle_) {
         _name = name_;
         _symbol = symbol_;
     }
 
-    function _convertToNominalCached(uint256 value, Math.Rounding rounding) internal virtual returns (uint256 shares) {
-        if(value == type(uint256).max) return type(uint256).max;
+    function _convertToNominalCached(uint256 value, Math.Rounding rounding)
+        internal
+        virtual
+        returns (uint256 shares)
+    {
+        if (value == type(uint256).max) return type(uint256).max;
 
         return value.mulDiv(DEFAULT_DECIMALS_FACTOR, assetPriceCached(), rounding);
     }
 
-    function _convertFromNominalCached(uint256 nominal, Math.Rounding rounding) internal virtual returns (uint256 assets) {
-        if(nominal == type(uint256).max) return type(uint256).max;
+    function _convertFromNominalCached(uint256 nominal, Math.Rounding rounding)
+        internal
+        virtual
+        returns (uint256 assets)
+    {
+        if (nominal == type(uint256).max) return type(uint256).max;
 
         return nominal.mulDiv(assetPriceCached(), DEFAULT_DECIMALS_FACTOR, rounding);
     }
 
-    function _convertToNominal(uint256 value, Math.Rounding rounding) internal view virtual returns (uint256 shares) {
-        if(value == type(uint256).max) return type(uint256).max;
+    function _convertToNominal(uint256 value, Math.Rounding rounding)
+        internal
+        view
+        virtual
+        returns (uint256 shares)
+    {
+        if (value == type(uint256).max) return type(uint256).max;
 
         return value.mulDiv(DEFAULT_DECIMALS_FACTOR, assetPrice(), rounding);
     }
 
-    function _convertFromNominal(uint256 nominal, Math.Rounding rounding) internal view virtual returns (uint256 assets) {
-        if(nominal == type(uint256).max) return type(uint256).max;
+    function _convertFromNominal(uint256 nominal, Math.Rounding rounding)
+        internal
+        view
+        virtual
+        returns (uint256 assets)
+    {
+        if (nominal == type(uint256).max) return type(uint256).max;
 
         return nominal.mulDiv(assetPrice(), DEFAULT_DECIMALS_FACTOR, rounding);
     }
@@ -91,7 +111,13 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         return _convertFromNominal(_balances[account], Math.Rounding.Down);
     }
 
-    function allowance(address owner, address spender) public view virtual override returns (uint256) {
+    function allowance(address owner, address spender)
+        public
+        view
+        virtual
+        override
+        returns (uint256)
+    {
         // don't cache price
         return _convertFromNominal(_allowances[owner][spender], Math.Rounding.Down);
     }
@@ -130,10 +156,14 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         return true;
     }
 
-    function decreaseAllowance(address spender, uint256 subtractedValue) public virtual returns (bool) {
+    function decreaseAllowance(address spender, uint256 subtractedValue)
+        public
+        virtual
+        returns (bool)
+    {
         address owner = _msgSender();
         uint256 currentAllowance = _allowanceCached(owner, spender);
-        require(currentAllowance >= subtractedValue, "ERC20: decreased allowance below zero");
+        require(currentAllowance >= subtractedValue, 'ERC20: decreased allowance below zero');
         unchecked {
             _approve(owner, spender, currentAllowance - subtractedValue);
         }
@@ -147,11 +177,11 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         uint256 nominalAmount,
         uint256 amount
     ) internal virtual {
-        require(from != address(0), "ERC20: transfer from the zero address");
-        require(to != address(0), "ERC20: transfer to the zero address");
+        require(from != address(0), 'ERC20: transfer from the zero address');
+        require(to != address(0), 'ERC20: transfer to the zero address');
 
         uint256 fromBalance = _balances[from];
-        require(fromBalance >= nominalAmount, "ERC20: transfer amount exceeds balance");
+        require(fromBalance >= nominalAmount, 'ERC20: transfer amount exceeds balance');
         unchecked {
             _balances[from] = fromBalance - nominalAmount;
         }
@@ -160,19 +190,27 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         emit Transfer(from, to, amount);
     }
 
-    function _mint(address account, uint256 nominalAmount, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: mint to the zero address");
+    function _mint(
+        address account,
+        uint256 nominalAmount,
+        uint256 amount
+    ) internal virtual {
+        require(account != address(0), 'ERC20: mint to the zero address');
 
         _totalSupply += nominalAmount;
         _balances[account] += nominalAmount;
         emit Transfer(address(0), account, amount);
     }
 
-    function _burn(address account, uint256 nominalAmount, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: burn from the zero address");
+    function _burn(
+        address account,
+        uint256 nominalAmount,
+        uint256 amount
+    ) internal virtual {
+        require(account != address(0), 'ERC20: burn from the zero address');
 
         uint256 accountBalance = balanceOfNominal(account);
-        require(accountBalance >= nominalAmount, "ERC20: burn amount exceeds balance");
+        require(accountBalance >= nominalAmount, 'ERC20: burn amount exceeds balance');
         unchecked {
             _balances[account] = accountBalance - nominalAmount;
         }
@@ -186,8 +224,8 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         address spender,
         uint256 amount
     ) internal virtual {
-        require(owner != address(0), "ERC20: approve from the zero address");
-        require(spender != address(0), "ERC20: approve to the zero address");
+        require(owner != address(0), 'ERC20: approve from the zero address');
+        require(spender != address(0), 'ERC20: approve to the zero address');
 
         _allowances[owner][spender] = _convertToNominalCached(amount, Math.Rounding.Down);
         emit Approval(owner, spender, amount);
@@ -200,7 +238,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
     ) internal virtual {
         uint256 currentAllowance = _allowanceCached(owner, spender);
         if (currentAllowance != type(uint256).max) {
-            require(currentAllowance >= amount, "ERC20: insufficient allowance");
+            require(currentAllowance >= amount, 'ERC20: insufficient allowance');
             unchecked {
                 _approve(owner, spender, currentAllowance - amount);
             }

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 
 /**
  * @dev OpenZeppelin v4.7.0 IERC4626 fork
-*/
+ */
 interface IElasticVault is IERC20, IERC20Metadata {
     event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
 

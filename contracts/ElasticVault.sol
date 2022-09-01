@@ -4,13 +4,13 @@ pragma solidity ^0.8.0;
 import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/utils/math/Math.sol';
-import "./ElasticERC20.sol";
-import "./interfaces/IElasticVault.sol";
-import "./interfaces/IElasticVaultMigrator.sol";
+import './ElasticERC20.sol';
+import './interfaces/IElasticVault.sol';
+import './interfaces/IElasticVaultMigrator.sol';
 
 /**
  * @dev OpenZeppelin v4.7.0 ERC4626 fork
-*/
+ */
 abstract contract ElasticVault is ElasticERC20, IElasticVault {
     using Math for uint256;
 
@@ -40,7 +40,10 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         _asset = asset_;
     }
 
-    function changeDailyDepositParams(uint256 dailyDepositDuration_, uint256 dailyDepositLimit_) public onlyOwner {
+    function changeDailyDepositParams(uint256 dailyDepositDuration_, uint256 dailyDepositLimit_)
+        public
+        onlyOwner
+    {
         dailyDepositDuration = dailyDepositDuration_;
         dailyDepositLimit = dailyDepositLimit_;
 
@@ -48,7 +51,10 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         dailyDepositCountingBlock = dailyDepositDuration > 0 ? block.number : 0;
     }
 
-    function changeDailyWithdrawParams(uint256 dailyWithdrawDuration_, uint256 dailyWithdrawLimit_) public onlyOwner {
+    function changeDailyWithdrawParams(uint256 dailyWithdrawDuration_, uint256 dailyWithdrawLimit_)
+        public
+        onlyOwner
+    {
         dailyWithdrawDuration = dailyWithdrawDuration_;
         dailyWithdrawLimit = dailyWithdrawLimit_;
 
@@ -57,12 +63,12 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     }
 
     function changeWithdrawFee(uint256 withdrawFee_) public onlyOwner {
-        require(withdrawFee_ <= FEE_DENOMINATOR, "Bigger that 100%");
+        require(withdrawFee_ <= FEE_DENOMINATOR, 'Bigger that 100%');
         feePercent = withdrawFee_;
     }
 
     function changeFeeDistributor(address feeDistributor_) public onlyOwner {
-        require(feeDistributor_ != address(0), "Zero fee distributor");
+        require(feeDistributor_ != address(0), 'Zero fee distributor');
         feeDistributor = feeDistributor_;
     }
 
@@ -116,7 +122,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
 
     /** @dev See {IERC4262-deposit}. */
     function deposit(uint256 assets, address receiver) public virtual override returns (uint256) {
-        require(assets <= maxDeposit(receiver), "ERC4626: deposit more than max");
+        require(assets <= maxDeposit(receiver), 'ERC4626: deposit more than max');
 
         uint256 shares = _previewDepositCached(assets);
         _deposit(_msgSender(), receiver, assets, shares);
@@ -130,7 +136,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         address receiver,
         address owner
     ) public virtual override returns (uint256) {
-        require(assets <= maxWithdraw(owner), "ERC4626: withdraw more than max");
+        require(assets <= maxWithdraw(owner), 'ERC4626: withdraw more than max');
 
         uint256 shares = _previewWithdrawCached(assets);
         _withdraw(_msgSender(), receiver, owner, assets, shares);
@@ -147,13 +153,13 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         uint256 assets,
         uint256 shares
     ) internal virtual {
-        if(dailyDepositDuration > 0) {
-            if(block.number > dailyDepositCountingBlock + dailyDepositDuration) {
+        if (dailyDepositDuration > 0) {
+            if (block.number > dailyDepositCountingBlock + dailyDepositDuration) {
                 dailyDepositTotal = 0;
                 dailyDepositCountingBlock = dailyDepositCountingBlock + dailyDepositDuration;
             }
             dailyDepositTotal += assets;
-            require(dailyDepositTotal <= dailyDepositLimit, "Daily deposit limit overflow");
+            require(dailyDepositTotal <= dailyDepositLimit, 'Daily deposit limit overflow');
         }
 
         // If _asset is ERC777, `transferFrom` can trigger a reenterancy BEFORE the transfer happens through the
@@ -179,9 +185,8 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         uint256 assets,
         uint256 shares
     ) internal virtual {
-
         uint256 feeAmount;
-        if(feePercent > 0) {
+        if (feePercent > 0) {
             feeAmount = shares.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
             shares -= feeAmount;
 
@@ -189,13 +194,13 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
             assets -= feeAmount;
         }
 
-        if(dailyWithdrawDuration > 0) {
-            if(block.number > dailyWithdrawCountingBlock + dailyWithdrawDuration) {
+        if (dailyWithdrawDuration > 0) {
+            if (block.number > dailyWithdrawCountingBlock + dailyWithdrawDuration) {
                 dailyWithdrawTotal = 0;
                 dailyWithdrawCountingBlock = dailyWithdrawCountingBlock + dailyWithdrawDuration;
             }
             dailyWithdrawTotal += assets;
-            require(dailyWithdrawTotal <= dailyWithdrawLimit, "Daily withdraw limit overflow");
+            require(dailyWithdrawTotal <= dailyWithdrawLimit, 'Daily withdraw limit overflow');
         }
 
         if (caller != owner) {
@@ -210,7 +215,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         // shares are burned and after the assets are transfered, which is a valid state.
         _burn(owner, shares, assets);
         SafeERC20.safeTransfer(IERC20Metadata(asset()), receiver, assets);
-        if(feeAmount > 0) {
+        if (feeAmount > 0) {
             SafeERC20.safeTransfer(IERC20Metadata(asset()), feeDistributor, feeAmount);
         }
 
