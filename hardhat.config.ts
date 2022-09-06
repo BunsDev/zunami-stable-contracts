@@ -1,6 +1,7 @@
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
+import "@nomiclabs/hardhat-truffle5";
 
 import 'hardhat-contract-sizer';
 import 'hardhat-deploy';
@@ -33,13 +34,14 @@ const config: HardhatUserConfig = {
                 blockNumber: 15183276,
             },
             accounts: [
-                // 5 accounts with 10^14 ETH each
+                // 6 accounts with 10^14 ETH each
                 // Addresses:
                 //   0x186e446fbd41dD51Ea2213dB2d3ae18B05A05ba8
                 //   0x6824c889f6EbBA8Dac4Dd4289746FCFaC772Ea56
                 //   0xCFf94465bd20C91C86b0c41e385052e61ed49f37
                 //   0xEBAf3e0b7dBB0Eb41d66875Dd64d9F0F314651B3
                 //   0xbFe6D5155040803CeB12a73F8f3763C26dd64a92
+                //   0xAA54215D0dd15CCE4749cF9F2e0DD9Fb00eb2473
                 {
                     privateKey:
                         '0xf269c6517520b4435128014f9c1e50c1c498374a7f5143f035bfb32153f3adab',
@@ -63,6 +65,11 @@ const config: HardhatUserConfig = {
                 {
                     privateKey:
                         '0x380c430a9b8fa9cce5524626d25a942fab0f26801d30bfd41d752be9ba74bd98',
+                    balance: '100000000000000000000000000000000',
+                },
+                {
+                    privateKey:
+                      '9c68a021099f12610f41481845c5b6c405ca48d8d7ce9e75668c20f7f2aa0076',
                     balance: '100000000000000000000000000000000',
                 },
             ],
