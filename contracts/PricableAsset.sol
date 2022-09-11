@@ -29,7 +29,12 @@ contract PricableAsset is Ownable {
         return priceOracle.lpPrice();
     }
 
-    function assetPriceChahedParams() public view virtual returns (uint256 cachedBlock, uint256 cachedAssetPrice) {
+    function assetPriceChahedParams()
+        public
+        view
+        virtual
+        returns (uint256 cachedBlock, uint256 cachedAssetPrice)
+    {
         cachedBlock = _cachedBlock;
         cachedAssetPrice = _cachedAssetPrice;
     }

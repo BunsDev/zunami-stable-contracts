@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.0;
 
-import "../ElasticVault.sol";
+import '../ElasticVault.sol';
 
 contract ElasticVaultMock is ElasticVault {
     constructor(
@@ -12,11 +12,19 @@ contract ElasticVaultMock is ElasticVault {
         string memory symbol
     ) ElasticERC20(name, symbol, priceOracle) ElasticVault(asset) {}
 
-    function mockMint(address account, uint256 nominalAmount, uint256 amount) public {
+    function mockMint(
+        address account,
+        uint256 nominalAmount,
+        uint256 amount
+    ) public {
         _mint(account, nominalAmount, amount);
     }
 
-    function mockBurn(address account, uint256 nominalAmount, uint256 amount) public {
+    function mockBurn(
+        address account,
+        uint256 nominalAmount,
+        uint256 amount
+    ) public {
         _burn(account, nominalAmount, amount);
     }
 }

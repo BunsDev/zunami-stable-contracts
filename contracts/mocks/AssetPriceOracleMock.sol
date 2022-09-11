@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "../interfaces/IAssetPriceOracle.sol";
+import '../interfaces/IAssetPriceOracle.sol';
 
 contract AssetPriceOracleMock is IAssetPriceOracle {
-
     uint256 private _assetPrice;
 
     constructor() {

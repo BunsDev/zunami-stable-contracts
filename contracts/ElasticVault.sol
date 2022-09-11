@@ -80,7 +80,13 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         return _asset.balanceOf(address(this));
     }
 
-    function convertToNominal(uint256 value) public view virtual override returns (uint256 nominal) {
+    function convertToNominal(uint256 value)
+        public
+        view
+        virtual
+        override
+        returns (uint256 nominal)
+    {
         return _convertToNominal(value, Math.Rounding.Down);
     }
 
@@ -118,7 +124,12 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     }
 
     /** @dev See {IERC4262-deposit}. */
-    function deposit(uint256 nominalValue, address receiver) public virtual override returns (uint256) {
+    function deposit(uint256 nominalValue, address receiver)
+        public
+        virtual
+        override
+        returns (uint256)
+    {
         require(nominalValue <= maxDeposit(receiver), 'ERC4626: deposit more than max');
 
         uint256 value = _previewDepositCached(nominalValue);
