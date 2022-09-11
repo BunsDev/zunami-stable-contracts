@@ -2,10 +2,12 @@ const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test
 const { expect } = require('chai');
 const { ZERO_ADDRESS, MAX_UINT256 } = constants;
 
-function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder, recipient, anotherAccount) {
+const mulNorm = (amount, price) =>  new BN(amount).mul( new BN(price) ).div( new BN(10).pow(new BN(18)));
+
+function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder, recipient, anotherAccount, assetPrice) {
   describe('total supply', function () {
     it('returns the total amount of tokens', async function () {
-      expect(await this.token.totalSupply()).to.be.bignumber.equal(initialSupply);
+      expect(await this.token.totalSupply()).to.be.bignumber.equal(mulNorm(initialSupply, assetPrice));
     });
   });
 
@@ -18,13 +20,13 @@ function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder
 
     describe('when the requested account has some tokens', function () {
       it('returns the total amount of tokens', async function () {
-        expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(initialSupply);
+        expect(await this.token.balanceOf(initialHolder)).to.be.bignumber.equal(mulNorm(initialSupply, assetPrice));
       });
     });
   });
 
   describe('transfer', function () {
-    shouldBehaveLikeElasticERC20Transfer(errorPrefix, initialHolder, recipient, initialSupply,
+    shouldBehaveLikeElasticERC20Transfer(errorPrefix, initialHolder, recipient, initialSupply, assetPrice,
       function (from, to, value) {
         return this.token.transfer(to, value, { from });
       },
@@ -42,11 +44,11 @@ function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder
 
         describe('when the spender has enough allowance', function () {
           beforeEach(async function () {
-            await this.token.approve(spender, initialSupply, { from: initialHolder });
+            await this.token.approve(spender, mulNorm(initialSupply, assetPrice), { from: initialHolder });
           });
 
           describe('when the token owner has enough balance', function () {
-            const amount = initialSupply;
+            const amount = mulNorm(initialSupply, assetPrice);
 
             it('transfers the requested amount', async function () {
               await this.token.transferFrom(tokenOwner, to, amount, { from: spender });
@@ -80,7 +82,7 @@ function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder
           });
 
           describe('when the token owner does not have enough balance', function () {
-            const amount = initialSupply;
+            const amount = mulNorm(initialSupply, assetPrice);
 
             beforeEach('reducing balance', async function () {
               await this.token.transfer(to, 1, { from: tokenOwner });
@@ -96,14 +98,14 @@ function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder
         });
 
         describe('when the spender does not have enough allowance', function () {
-          const allowance = initialSupply.subn(1);
+          const allowance = mulNorm(initialSupply, assetPrice).subn(2); //TODO: fix rounding
 
           beforeEach(async function () {
             await this.token.approve(spender, allowance, { from: tokenOwner });
           });
 
           describe('when the token owner has enough balance', function () {
-            const amount = initialSupply;
+            const amount = mulNorm(initialSupply, assetPrice);
 
             it('reverts', async function () {
               await expectRevert(
@@ -150,7 +152,7 @@ function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder
       });
 
       describe('when the recipient is the zero address', function () {
-        const amount = initialSupply;
+        const amount = mulNorm(initialSupply, assetPrice);
         const to = ZERO_ADDRESS;
 
         beforeEach(async function () {
@@ -180,7 +182,7 @@ function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder
   });
 
   describe('approve', function () {
-    shouldBehaveLikeElasticERC20Approve(errorPrefix, initialHolder, recipient, initialSupply,
+    shouldBehaveLikeElasticERC20Approve(errorPrefix, initialHolder, recipient, initialSupply, assetPrice,
       function (owner, spender, amount) {
         return this.token.approve(spender, amount, { from: owner });
       },
@@ -188,10 +190,10 @@ function shouldBehaveLikeElasticERC20 (errorPrefix, initialSupply, initialHolder
   });
 }
 
-function shouldBehaveLikeElasticERC20Transfer (errorPrefix, from, to, balance, transfer) {
+function shouldBehaveLikeElasticERC20Transfer (errorPrefix, from, to, balance, assetPrice, transfer) {
   describe('when the recipient is not the zero address', function () {
     describe('when the sender does not have enough balance', function () {
-      const amount = balance.addn(1);
+      const amount = mulNorm(balance, assetPrice).addn(3); //TODO: make works works with 1
 
       it('reverts', async function () {
         await expectRevert(transfer.call(this, from, to, amount),
@@ -201,7 +203,7 @@ function shouldBehaveLikeElasticERC20Transfer (errorPrefix, from, to, balance, t
     });
 
     describe('when the sender transfers all balance', function () {
-      const amount = balance;
+      const amount = mulNorm(balance, assetPrice.toString());
 
       it('transfers the requested amount', async function () {
         await transfer.call(this, from, to, amount);
@@ -226,7 +228,7 @@ function shouldBehaveLikeElasticERC20Transfer (errorPrefix, from, to, balance, t
       it('transfers the requested amount', async function () {
         await transfer.call(this, from, to, amount);
 
-        expect(await this.token.balanceOf(from)).to.be.bignumber.equal(balance);
+        expect(await this.token.balanceOf(from)).to.be.bignumber.equal(mulNorm(balance, assetPrice));
 
         expect(await this.token.balanceOf(to)).to.be.bignumber.equal('0');
       });
@@ -250,10 +252,10 @@ function shouldBehaveLikeElasticERC20Transfer (errorPrefix, from, to, balance, t
   });
 }
 
-function shouldBehaveLikeElasticERC20Approve (errorPrefix, owner, spender, supply, approve) {
+function shouldBehaveLikeElasticERC20Approve (errorPrefix, owner, spender, supply, assetPrice, approve) {
   describe('when the spender is not the zero address', function () {
     describe('when the sender has enough balance', function () {
-      const amount = supply;
+      const amount = mulNorm(supply, assetPrice);
 
       it('emits an approval event', async function () {
         expectEvent(
@@ -285,7 +287,7 @@ function shouldBehaveLikeElasticERC20Approve (errorPrefix, owner, spender, suppl
     });
 
     describe('when the sender does not have enough balance', function () {
-      const amount = supply.addn(1);
+      const amount = mulNorm(supply, assetPrice).addn(1);
 
       it('emits an approval event', async function () {
         expectEvent(

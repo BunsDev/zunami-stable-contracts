@@ -103,7 +103,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
 
     function totalSupply() public view virtual override returns (uint256) {
         // don't cache price
-        return _convertFromNominal(_totalSupply, Math.Rounding.Up);
+        return _convertFromNominal(_totalSupply, Math.Rounding.Down);
     }
 
     function balanceOf(address account) public view virtual override returns (uint256) {
@@ -128,7 +128,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
 
     function transfer(address to, uint256 amount) public virtual override returns (bool) {
         address owner = _msgSender();
-        _transfer(owner, to, _convertToNominalCached(amount, Math.Rounding.Down), amount);
+        _transfer(owner, to, _convertToNominalCached(amount, Math.Rounding.Up), amount);
         return true;
     }
 
@@ -144,7 +144,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         uint256 amount
     ) public virtual override returns (bool) {
         address spender = _msgSender();
-        uint256 nominalAmount = _convertToNominalCached(amount, Math.Rounding.Down);
+        uint256 nominalAmount = _convertToNominalCached(amount, Math.Rounding.Up);
         _spendAllowance(from, spender, amount);
         _transfer(from, to, nominalAmount, amount);
         return true;
@@ -227,7 +227,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         require(owner != address(0), 'ERC20: approve from the zero address');
         require(spender != address(0), 'ERC20: approve to the zero address');
 
-        _allowances[owner][spender] = _convertToNominalCached(amount, Math.Rounding.Down);
+        _allowances[owner][spender] = _convertToNominalCached(amount, Math.Rounding.Up);
         emit Approval(owner, spender, amount);
     }
 
