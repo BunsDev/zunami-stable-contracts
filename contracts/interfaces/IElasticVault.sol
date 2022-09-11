@@ -49,7 +49,7 @@ interface IElasticVault is IERC20, IERC20Metadata {
      * “average-user’s” price-per-share, meaning what the average user should expect to see when exchanging to and
      * from.
      */
-    function convertToShares(uint256 assets) external view returns (uint256 shares);
+    function convertToNominal(uint256 value) external view returns (uint256 nominal);
 
     /**
      * @dev Returns the amount of assets that the Vault would exchange for the amount of shares provided, in an ideal
@@ -64,7 +64,7 @@ interface IElasticVault is IERC20, IERC20Metadata {
      * “average-user’s” price-per-share, meaning what the average user should expect to see when exchanging to and
      * from.
      */
-    function convertToAssets(uint256 shares) external view returns (uint256 assets);
+    function convertToValue(uint256 nominal) external view returns (uint256 value);
 
     /**
      * @dev Returns the maximum amount of the underlying asset that can be deposited into the Vault for the receiver,

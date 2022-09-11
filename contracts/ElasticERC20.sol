@@ -37,7 +37,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
     function _convertToNominalCached(uint256 value, Math.Rounding rounding)
         internal
         virtual
-        returns (uint256 shares)
+        returns (uint256 nominal)
     {
         if (value == type(uint256).max) return type(uint256).max;
 
@@ -47,7 +47,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
     function _convertFromNominalCached(uint256 nominal, Math.Rounding rounding)
         internal
         virtual
-        returns (uint256 assets)
+        returns (uint256 value)
     {
         if (nominal == type(uint256).max) return type(uint256).max;
 
@@ -58,7 +58,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         internal
         view
         virtual
-        returns (uint256 shares)
+        returns (uint256 nominal)
     {
         if (value == type(uint256).max) return type(uint256).max;
 
@@ -69,7 +69,7 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
         internal
         view
         virtual
-        returns (uint256 assets)
+        returns (uint256 value)
     {
         if (nominal == type(uint256).max) return type(uint256).max;
 
@@ -174,73 +174,73 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
     function _transfer(
         address from,
         address to,
-        uint256 nominalAmount,
-        uint256 amount
+        uint256 nominal,
+        uint256 value
     ) internal virtual {
         require(from != address(0), 'ERC20: transfer from the zero address');
         require(to != address(0), 'ERC20: transfer to the zero address');
 
         uint256 fromBalance = _balances[from];
-        require(fromBalance >= nominalAmount, 'ERC20: transfer amount exceeds balance');
+        require(fromBalance >= nominal, 'ERC20: transfer amount exceeds balance');
         unchecked {
-            _balances[from] = fromBalance - nominalAmount;
+            _balances[from] = fromBalance - nominal;
         }
-        _balances[to] += nominalAmount;
+        _balances[to] += nominal;
 
-        emit Transfer(from, to, amount);
+        emit Transfer(from, to, value);
     }
 
     function _mint(
         address account,
-        uint256 nominalAmount,
-        uint256 amount
+        uint256 nominal,
+        uint256 value
     ) internal virtual {
         require(account != address(0), 'ERC20: mint to the zero address');
 
-        _totalSupply += nominalAmount;
-        _balances[account] += nominalAmount;
-        emit Transfer(address(0), account, amount);
+        _totalSupply += nominal;
+        _balances[account] += nominal;
+        emit Transfer(address(0), account, value);
     }
 
     function _burn(
         address account,
-        uint256 nominalAmount,
-        uint256 amount
+        uint256 nominal,
+        uint256 value
     ) internal virtual {
         require(account != address(0), 'ERC20: burn from the zero address');
 
         uint256 accountBalance = balanceOfNominal(account);
-        require(accountBalance >= nominalAmount, 'ERC20: burn amount exceeds balance');
+        require(accountBalance >= nominal, 'ERC20: burn amount exceeds balance');
         unchecked {
-            _balances[account] = accountBalance - nominalAmount;
+            _balances[account] = accountBalance - nominal;
         }
-        _totalSupply -= nominalAmount;
+        _totalSupply -= nominal;
 
-        emit Transfer(account, address(0), amount);
+        emit Transfer(account, address(0), value);
     }
 
     function _approve(
         address owner,
         address spender,
-        uint256 amount
+        uint256 value
     ) internal virtual {
         require(owner != address(0), 'ERC20: approve from the zero address');
         require(spender != address(0), 'ERC20: approve to the zero address');
 
-        _allowances[owner][spender] = _convertToNominalCached(amount, Math.Rounding.Up);
-        emit Approval(owner, spender, amount);
+        _allowances[owner][spender] = _convertToNominalCached(value, Math.Rounding.Up);
+        emit Approval(owner, spender, value);
     }
 
     function _spendAllowance(
         address owner,
         address spender,
-        uint256 amount
+        uint256 value
     ) internal virtual {
         uint256 currentAllowance = _allowanceCached(owner, spender);
         if (currentAllowance != type(uint256).max) {
-            require(currentAllowance >= amount, 'ERC20: insufficient allowance');
+            require(currentAllowance >= value, 'ERC20: insufficient allowance');
             unchecked {
-                _approve(owner, spender, currentAllowance - amount);
+                _approve(owner, spender, currentAllowance - value);
             }
         }
     }
