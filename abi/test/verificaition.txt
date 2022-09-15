@@ -1,0 +1,2 @@
+npx hardhat verify --network mainnet 0x5f5c50A3f4d82ceeD7dd0c33463d4CdC6276c253
+https://etherscan.io/address/0x5f5c50A3f4d82ceeD7dd0c33463d4CdC6276c253#code
