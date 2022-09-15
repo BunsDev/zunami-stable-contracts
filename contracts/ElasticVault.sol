@@ -231,6 +231,6 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     }
 
     function _isVaultCollateralized() private view returns (bool) {
-        return totalAssets() > 0 || totalSupply() == 0;
+        return totalAssets() > 0 || totalSupplyNominal() == 0;
     }
 }

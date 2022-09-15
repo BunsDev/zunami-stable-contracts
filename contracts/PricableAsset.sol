@@ -44,7 +44,7 @@ contract PricableAsset is Ownable {
             _cachedBlock = block.number;
             uint256 currentAssetPrice = assetPrice();
             if (_cachedAssetPrice < currentAssetPrice) {
-                _cachedAssetPrice = assetPrice();
+                _cachedAssetPrice = currentAssetPrice;
                 emit CachedAssetPrice(_cachedBlock, _cachedAssetPrice);
             }
         }
