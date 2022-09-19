@@ -22,10 +22,10 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     address public feeDistributor;
 
     uint256 public dailyDepositDuration; // in blocks
-    uint256 public dailyDepositLimit; // in minimal assets
+    uint256 public dailyDepositLimit; // in minimal value
 
     uint256 public dailyWithdrawDuration; // in blocks
-    uint256 public dailyWithdrawLimit; // in minimal assets
+    uint256 public dailyWithdrawLimit; // in minimal value
 
     uint256 public dailyDepositTotal;
     uint256 public dailyDepositCountingBlock; // start block of limit counting
@@ -105,6 +105,10 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         return balanceOf(owner);
     }
 
+    function _maxWithdrawCached(address owner) public returns (uint256) {
+        return _convertFromNominalCached(balanceOfNominal(owner), Math.Rounding.Down);
+    }
+
     /** @dev See {IERC4262-previewDeposit}. */
     function previewDeposit(uint256 nominal) public view virtual override returns (uint256) {
         return _convertFromNominal(nominal, Math.Rounding.Down);
@@ -124,32 +128,43 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     }
 
     /** @dev See {IERC4262-deposit}. */
-    function deposit(uint256 nominalValue, address receiver)
+    function deposit(uint256 nominal, address receiver)
         public
         virtual
         override
         returns (uint256)
     {
-        require(nominalValue <= maxDeposit(receiver), 'ERC4626: deposit more than max');
+        require(nominal <= maxDeposit(receiver), 'ERC4626: deposit more than max');
 
-        uint256 value = _previewDepositCached(nominalValue);
-        _deposit(_msgSender(), receiver, value, nominalValue);
+        uint256 value = _previewDepositCached(nominal);
+        _deposit(_msgSender(), receiver, value, nominal);
 
-        return nominalValue;
+        return nominal;
     }
 
     /** @dev See {IERC4262-withdraw}. */
     function withdraw(
-        uint256 assets,
+        uint256 value,
         address receiver,
         address owner
     ) public virtual override returns (uint256) {
-        require(assets <= maxWithdraw(owner), 'ERC4626: withdraw more than max');
+        require(value <= _maxWithdrawCached(owner), 'ERC4626: withdraw more than max');
 
-        uint256 nominalValue = _previewWithdrawCached(assets);
-        _withdraw(_msgSender(), receiver, owner, assets, nominalValue);
+        uint256 nominal = _previewWithdrawCached(value);
+        _withdraw(_msgSender(), receiver, owner, value, nominal);
 
-        return nominalValue;
+        return nominal;
+    }
+
+    function withdrawAll(
+        address receiver,
+        address owner
+    ) public virtual returns (uint256) {
+        uint256 nominal = balanceOfNominal(owner);
+        uint256 value = _maxWithdrawCached(owner);
+        _withdraw(_msgSender(), receiver, owner, value, nominal);
+
+        return nominal;
     }
 
     /**
@@ -175,7 +190,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         // calls the vault, which is assumed not malicious.
         //
         // Conclusion: we need to do the transfer before we mint so that any reentrancy would happen before the
-        // assets are transfered and before the shares are minted, which is a valid state.
+        // value are transfered and before the nominal are minted, which is a valid state.
         // slither-disable-next-line reentrancy-no-eth
         SafeERC20.safeTransferFrom(IERC20Metadata(asset()), caller, address(this), nominal);
         _mint(receiver, nominal, value);
@@ -190,16 +205,16 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         address caller,
         address receiver,
         address owner,
-        uint256 assets,
-        uint256 nominalValue
+        uint256 value,
+        uint256 nominal
     ) internal virtual {
         uint256 feeAmount;
         if (feePercent > 0) {
-            feeAmount = nominalValue.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
-            nominalValue -= feeAmount;
+            feeAmount = nominal.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
+            nominal -= feeAmount;
 
-            feeAmount = assets.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
-            assets -= feeAmount;
+            feeAmount = value.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
+            value -= feeAmount;
         }
 
         if (dailyWithdrawDuration > 0) {
@@ -207,12 +222,12 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
                 dailyWithdrawTotal = 0;
                 dailyWithdrawCountingBlock = dailyWithdrawCountingBlock + dailyWithdrawDuration;
             }
-            dailyWithdrawTotal += assets;
+            dailyWithdrawTotal += value;
             require(dailyWithdrawTotal <= dailyWithdrawLimit, 'Daily withdraw limit overflow');
         }
 
         if (caller != owner) {
-            _spendAllowance(owner, caller, assets);
+            _spendAllowance(owner, caller, value);
         }
 
         // If _asset is ERC777, `transfer` can trigger a reentrancy AFTER the transfer happens through the
@@ -220,14 +235,14 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         // calls the vault, which is assumed not malicious.
         //
         // Conclusion: we need to do the transfer after the burn so that any reentrancy would happen after the
-        // shares are burned and after the assets are transfered, which is a valid state.
-        _burn(owner, nominalValue, assets);
-        SafeERC20.safeTransfer(IERC20Metadata(asset()), receiver, nominalValue);
+        // nominal are burned and after the value are transfered, which is a valid state.
+        _burn(owner, nominal, value);
+        SafeERC20.safeTransfer(IERC20Metadata(asset()), receiver, nominal);
         if (feeAmount > 0) {
             SafeERC20.safeTransfer(IERC20Metadata(asset()), feeDistributor, feeAmount);
         }
 
-        emit Withdraw(caller, receiver, owner, assets, nominalValue, feeAmount);
+        emit Withdraw(caller, receiver, owner, value, nominal, feeAmount);
     }
 
     function _isVaultCollateralized() private view returns (bool) {

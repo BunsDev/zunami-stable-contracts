@@ -519,9 +519,9 @@ contract('ElasticVault', function (accounts) {
             expect(await this.vault.totalAssets()).to.be.bignumber.equal('2372');
         }
 
-        // 10. Bob withdraw all 4392 assets
+        // 10. Bob withdraw all
         {
-            const { tx } = await this.vault.withdraw(4981, user2, user2, { from: user2 });
+            const { tx } = await this.vault.withdrawAll(user2, user2, { from: user2 });
             expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: user2,
                 to: constants.ZERO_ADDRESS,

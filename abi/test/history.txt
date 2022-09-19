@@ -3,3 +3,6 @@ Token ELT deployed to: 0x5f5c50A3f4d82ceeD7dd0c33463d4CdC6276c253
 
 Start deploy
 Token ELT deployed to: 0x42873d662Fd25b6b5D2A240AFa1D39824a48091B
+
+Start deploy
+Token ELT deployed to: 0xD5B9Fc6019aB79C256186F08632597f7CC54921f
