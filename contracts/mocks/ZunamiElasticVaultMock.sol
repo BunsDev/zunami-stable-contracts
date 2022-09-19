@@ -1,16 +1,15 @@
 // SPDX-License-Identifier: MIT
-
 pragma solidity ^0.8.0;
 
-import '../ElasticVault.sol';
+import '../ZunamiElasticVault.sol';
 
-contract ElasticVaultMock is ElasticVault {
+contract ZunamiElasticVaultMock is ZunamiElasticVault {
     constructor(
         IERC20Metadata asset,
         address priceOracle,
         string memory name,
         string memory symbol
-    ) ElasticERC20(name, symbol, priceOracle) ElasticVault(asset) {}
+    ) ElasticERC20(name, symbol) ElasticVault(asset) ZunamiElasticVault(priceOracle) {}
 
     function mockMint(
         address account,

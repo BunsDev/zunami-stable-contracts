@@ -3,9 +3,11 @@
 pragma solidity ^0.8.0;
 
 import '../ElasticERC20.sol';
+import "./PricableAssetMock.sol";
 
 // mock class using ERC20
-contract ElasticERC20Mock is ElasticERC20 {
+contract ElasticERC20Mock is ElasticERC20, PricableAssetMock {
+
     constructor(
         string memory name,
         string memory symbol,
@@ -13,7 +15,7 @@ contract ElasticERC20Mock is ElasticERC20 {
         address initialAccount,
         uint256 initialNominalBalance,
         uint256 initialBalance
-    ) payable ElasticERC20(name, symbol, priceOracle) {
+    ) payable ElasticERC20(name, symbol) PricableAssetMock(priceOracle) {
         if (initialAccount != address(0)) {
             _mint(initialAccount, initialNominalBalance, initialBalance);
         }

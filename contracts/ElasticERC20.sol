@@ -10,7 +10,7 @@ import './PricableAsset.sol';
 /**
  * @dev OpenZeppelin v4.7.0 ERC20 fork
  */
-contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
+abstract contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
     using Math for uint256;
 
     uint8 public constant DEFAULT_DECIMALS = 18;
@@ -27,9 +27,8 @@ contract ElasticERC20 is Context, IERC20Metadata, PricableAsset {
 
     constructor(
         string memory name_,
-        string memory symbol_,
-        address priceOracle_
-    ) PricableAsset(priceOracle_) {
+        string memory symbol_
+    ) {
         _name = name_;
         _symbol = symbol_;
     }

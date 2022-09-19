@@ -16,60 +16,11 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
 
     IERC20Metadata private immutable _asset;
 
-    uint256 public constant FEE_DENOMINATOR = 1000000; // 100.0000%
-
-    uint256 public feePercent;
-    address public feeDistributor;
-
-    uint256 public dailyDepositDuration; // in blocks
-    uint256 public dailyDepositLimit; // in minimal value
-
-    uint256 public dailyWithdrawDuration; // in blocks
-    uint256 public dailyWithdrawLimit; // in minimal value
-
-    uint256 public dailyDepositTotal;
-    uint256 public dailyDepositCountingBlock; // start block of limit counting
-
-    uint256 public dailyWithdrawTotal;
-    uint256 public dailyWithdrawCountingBlock; // start block of limit counting
-
     /**
      * @dev Set the underlying asset contract. This must be an ERC20-compatible contract (ERC20 or ERC777).
      */
     constructor(IERC20Metadata asset_) {
         _asset = asset_;
-    }
-
-    function changeDailyDepositParams(uint256 dailyDepositDuration_, uint256 dailyDepositLimit_)
-        public
-        onlyOwner
-    {
-        dailyDepositDuration = dailyDepositDuration_;
-        dailyDepositLimit = dailyDepositLimit_;
-
-        dailyDepositTotal = 0;
-        dailyDepositCountingBlock = dailyDepositDuration > 0 ? block.number : 0;
-    }
-
-    function changeDailyWithdrawParams(uint256 dailyWithdrawDuration_, uint256 dailyWithdrawLimit_)
-        public
-        onlyOwner
-    {
-        dailyWithdrawDuration = dailyWithdrawDuration_;
-        dailyWithdrawLimit = dailyWithdrawLimit_;
-
-        dailyWithdrawTotal = 0;
-        dailyWithdrawCountingBlock = dailyWithdrawDuration > 0 ? block.number : 0;
-    }
-
-    function changeWithdrawFee(uint256 withdrawFee_) public onlyOwner {
-        require(withdrawFee_ <= FEE_DENOMINATOR, 'Bigger that 100%');
-        feePercent = withdrawFee_;
-    }
-
-    function changeFeeDistributor(address feeDistributor_) public onlyOwner {
-        require(feeDistributor_ != address(0), 'Zero fee distributor');
-        feeDistributor = feeDistributor_;
     }
 
     function asset() public view virtual override returns (address) {
@@ -120,7 +71,8 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
 
     /** @dev See {IERC4262-previewWithdraw}. */
     function previewWithdraw(uint256 value) public view virtual override returns (uint256) {
-        return _convertToNominal(value, Math.Rounding.Up);
+        (uint256 valueFee,) = _calcFee(_msgSender(), value, 0);
+        return _convertToNominal(value - valueFee, Math.Rounding.Up);
     }
 
     function _previewWithdrawCached(uint256 value) internal virtual returns (uint256) {
@@ -167,6 +119,13 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         return nominal;
     }
 
+    function _beforeDeposit(
+        address caller,
+        address receiver,
+        uint256 value,
+        uint256 nominal
+    ) internal virtual {}
+
     /**
      * @dev Deposit/mint common workflow.
      */
@@ -176,14 +135,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         uint256 value,
         uint256 nominal
     ) internal virtual {
-        if (dailyDepositDuration > 0) {
-            if (block.number > dailyDepositCountingBlock + dailyDepositDuration) {
-                dailyDepositTotal = 0;
-                dailyDepositCountingBlock = dailyDepositCountingBlock + dailyDepositDuration;
-            }
-            dailyDepositTotal += nominal;
-            require(dailyDepositTotal <= dailyDepositLimit, 'Daily deposit limit overflow');
-        }
+        _beforeDeposit(caller, receiver, value, nominal);
 
         // If _asset is ERC777, `transferFrom` can trigger a reenterancy BEFORE the transfer happens through the
         // `tokensToSend` hook. On the other hand, the `tokenReceived` hook, that is triggered after the transfer,
@@ -198,6 +150,27 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         emit Deposit(caller, receiver, value, nominal);
     }
 
+    function _beforeWithdraw(
+        address caller,
+        address receiver,
+        address owner,
+        uint256 value,
+        uint256 nominal
+    ) internal virtual {}
+
+    function _calcFee(
+        address,
+        uint256,
+        uint256
+    ) internal view virtual returns(uint256 valueFee, uint256 nominalFee) {
+        return (0,0);
+    }
+
+    function _withdrawFee(
+        uint256 value,
+        uint256 nominal
+    ) internal virtual { }
+
     /**
      * @dev Withdraw/redeem common workflow.
      */
@@ -208,27 +181,16 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         uint256 value,
         uint256 nominal
     ) internal virtual {
-        uint256 feeAmount;
-        if (feePercent > 0) {
-            feeAmount = nominal.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
-            nominal -= feeAmount;
-
-            feeAmount = value.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
-            value -= feeAmount;
-        }
-
-        if (dailyWithdrawDuration > 0) {
-            if (block.number > dailyWithdrawCountingBlock + dailyWithdrawDuration) {
-                dailyWithdrawTotal = 0;
-                dailyWithdrawCountingBlock = dailyWithdrawCountingBlock + dailyWithdrawDuration;
-            }
-            dailyWithdrawTotal += value;
-            require(dailyWithdrawTotal <= dailyWithdrawLimit, 'Daily withdraw limit overflow');
-        }
+        _beforeWithdraw(caller, receiver, owner, value, nominal);
 
         if (caller != owner) {
             _spendAllowance(owner, caller, value);
         }
+
+        (uint256 valueFee, uint256 nominalFee) = _calcFee(caller, value, nominal);
+        nominal -= nominalFee;
+        value -= valueFee;
+        _withdrawFee(nominalFee, valueFee);
 
         // If _asset is ERC777, `transfer` can trigger a reentrancy AFTER the transfer happens through the
         // `tokensReceived` hook. On the other hand, the `tokensToSend` hook, that is triggered before the transfer,
@@ -238,11 +200,8 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         // nominal are burned and after the value are transfered, which is a valid state.
         _burn(owner, nominal, value);
         SafeERC20.safeTransfer(IERC20Metadata(asset()), receiver, nominal);
-        if (feeAmount > 0) {
-            SafeERC20.safeTransfer(IERC20Metadata(asset()), feeDistributor, feeAmount);
-        }
 
-        emit Withdraw(caller, receiver, owner, value, nominal, feeAmount);
+        emit Withdraw(caller, receiver, owner, value, nominal, valueFee);
     }
 
     function _isVaultCollateralized() private view returns (bool) {
