@@ -92,7 +92,7 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
         if (dailyDepositDuration > 0 && !hasRole(REBALANCER_ROLE, caller)) {
             if (block.number > dailyDepositCountingBlock + dailyDepositDuration) {
                 dailyDepositTotal = 0;
-                dailyDepositCountingBlock = dailyDepositCountingBlock + dailyDepositDuration;
+                dailyDepositCountingBlock = block.number;
             }
             dailyDepositTotal += value;
             require(dailyDepositTotal <= dailyDepositLimit, 'Daily deposit limit overflow');
@@ -109,7 +109,7 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
         if (dailyWithdrawDuration > 0 && !hasRole(REBALANCER_ROLE, caller)) {
             if (block.number > dailyWithdrawCountingBlock + dailyWithdrawDuration) {
                 dailyWithdrawTotal = 0;
-                dailyWithdrawCountingBlock = dailyWithdrawCountingBlock + dailyWithdrawDuration;
+                dailyWithdrawCountingBlock = block.number;
             }
             dailyWithdrawTotal += value;
             require(dailyWithdrawTotal <= dailyWithdrawLimit, 'Daily withdraw limit overflow');
