@@ -3,11 +3,10 @@
 pragma solidity ^0.8.0;
 
 import '../ElasticERC20.sol';
-import "./PricableAssetMock.sol";
+import './PricableAssetMock.sol';
 
 // mock class using ERC20
 contract ElasticERC20Mock is ElasticERC20, PricableAssetMock {
-
     constructor(
         string memory name,
         string memory symbol,

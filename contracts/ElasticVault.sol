@@ -71,7 +71,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
 
     /** @dev See {IERC4262-previewWithdraw}. */
     function previewWithdraw(uint256 value) public view virtual override returns (uint256) {
-        (uint256 valueFee,) = _calcFee(_msgSender(), value, 0);
+        (uint256 valueFee, ) = _calcFee(_msgSender(), value, 0);
         return _convertToNominal(value - valueFee, Math.Rounding.Up);
     }
 
@@ -80,12 +80,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     }
 
     /** @dev See {IERC4262-deposit}. */
-    function deposit(uint256 nominal, address receiver)
-        public
-        virtual
-        override
-        returns (uint256)
-    {
+    function deposit(uint256 nominal, address receiver) public virtual override returns (uint256) {
         require(nominal <= maxDeposit(receiver), 'ERC4626: deposit more than max');
 
         uint256 value = _previewDepositCached(nominal);
@@ -108,10 +103,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         return nominal;
     }
 
-    function withdrawAll(
-        address receiver,
-        address owner
-    ) public virtual returns (uint256) {
+    function withdrawAll(address receiver, address owner) public virtual returns (uint256) {
         uint256 nominal = balanceOfNominal(owner);
         uint256 value = _maxWithdrawCached(owner);
         _withdraw(_msgSender(), receiver, owner, value, nominal);
@@ -162,14 +154,11 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         address,
         uint256,
         uint256
-    ) internal view virtual returns(uint256 valueFee, uint256 nominalFee) {
-        return (0,0);
+    ) internal view virtual returns (uint256 valueFee, uint256 nominalFee) {
+        return (0, 0);
     }
 
-    function _withdrawFee(
-        uint256 value,
-        uint256 nominal
-    ) internal virtual { }
+    function _withdrawFee(uint256 value, uint256 nominal) internal virtual {}
 
     /**
      * @dev Withdraw/redeem common workflow.

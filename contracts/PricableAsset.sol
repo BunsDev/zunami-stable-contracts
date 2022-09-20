@@ -11,7 +11,7 @@ abstract contract PricableAsset {
 
     function assetPrice() public view virtual returns (uint256);
 
-    function assetPriceChahedParams()
+    function assetPriceCachedParams()
         public
         view
         virtual
