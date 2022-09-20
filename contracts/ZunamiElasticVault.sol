@@ -28,8 +28,7 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
     uint256 public dailyWithdrawCountingBlock; // start block of limit counting
 
     IAssetPriceOracle public priceOracle;
-
-    event PriceOracleChanged(address priceOracle);
+    
     event DailyDepositParamsChanged(uint256 dailyDepositDuration, uint256 dailyDepositLimit);
     event DailyWithdrawParamsChanged(uint256 dailyWithdrawDuration, uint256 dailyWithdrawLimit);
     event WithdrawFeeChanged(uint256 withdrawFee);
@@ -39,20 +38,12 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(REBALANCER_ROLE, msg.sender);
 
-        changePriceOracle(priceOracle_);
+        require(priceOracle_ != address(0), 'Zero price oracle');
+        priceOracle = IAssetPriceOracle(priceOracle_);
     }
 
     function assetPrice() public view override returns (uint256) {
         return priceOracle.lpPrice();
-    }
-
-    function changePriceOracle(address priceOracle_) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        require(priceOracle_ != address(0), 'Zero price oracle');
-        priceOracle = IAssetPriceOracle(priceOracle_);
-
-        resetPriceCache();
-
-        emit PriceOracleChanged(priceOracle_);
     }
 
     function changeDailyDepositParams(uint256 dailyDepositDuration_, uint256 dailyDepositLimit_)
