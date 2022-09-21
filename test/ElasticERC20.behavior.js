@@ -92,7 +92,7 @@ function shouldBehaveLikeElasticERC20(
                         });
 
                         it('emits a transfer event', async function () {
-                            expectEvent(
+                            await expectEvent(
                                 await this.token.transferFrom(tokenOwner, to, amount, {
                                     from: spender,
                                 }),
@@ -102,7 +102,7 @@ function shouldBehaveLikeElasticERC20(
                         });
 
                         it('emits an approval event', async function () {
-                            expectEvent(
+                            await expectEvent(
                                 await this.token.transferFrom(tokenOwner, to, amount, {
                                     from: spender,
                                 }),
@@ -180,7 +180,7 @@ function shouldBehaveLikeElasticERC20(
                     });
 
                     it('does not emit an approval event', async function () {
-                        expectEvent.notEmitted(
+                        await expectEvent.notEmitted(
                             await this.token.transferFrom(tokenOwner, to, 1, { from: spender }),
                             'Approval'
                         );
@@ -265,7 +265,7 @@ function shouldBehaveLikeElasticERC20Transfer(
             });
 
             it('emits a transfer event', async function () {
-                expectEvent(await transfer.call(this, from, to, amount), 'Transfer', {
+                await expectEvent(await transfer.call(this, from, to, amount), 'Transfer', {
                     from,
                     to,
                     value: amount,
@@ -287,7 +287,7 @@ function shouldBehaveLikeElasticERC20Transfer(
             });
 
             it('emits a transfer event', async function () {
-                expectEvent(await transfer.call(this, from, to, amount), 'Transfer', {
+                await expectEvent(await transfer.call(this, from, to, amount), 'Transfer', {
                     from,
                     to,
                     value: amount,
@@ -319,7 +319,7 @@ function shouldBehaveLikeElasticERC20Approve(
             const amount = mulNorm(supply, assetPrice);
 
             it('emits an approval event', async function () {
-                expectEvent(await approve.call(this, owner, spender, amount), 'Approval', {
+                await expectEvent(await approve.call(this, owner, spender, amount), 'Approval', {
                     owner: owner,
                     spender: spender,
                     value: amount,
@@ -355,7 +355,7 @@ function shouldBehaveLikeElasticERC20Approve(
             const amount = mulNorm(supply, assetPrice).addn(1);
 
             it('emits an approval event', async function () {
-                expectEvent(await approve.call(this, owner, spender, amount), 'Approval', {
+                await expectEvent(await approve.call(this, owner, spender, amount), 'Approval', {
                     owner: owner,
                     spender: spender,
                     value: amount,

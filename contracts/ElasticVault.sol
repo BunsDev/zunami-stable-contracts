@@ -179,7 +179,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         (uint256 valueFee, uint256 nominalFee) = _calcFee(caller, value, nominal);
         nominal -= nominalFee;
         value -= valueFee;
-        _withdrawFee(nominalFee, valueFee);
+        _withdrawFee(valueFee, nominalFee);
 
         // If _asset is ERC777, `transfer` can trigger a reentrancy AFTER the transfer happens through the
         // `tokensReceived` hook. On the other hand, the `tokensToSend` hook, that is triggered before the transfer,

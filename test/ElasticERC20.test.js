@@ -84,7 +84,7 @@ contract('ElasticERC20', function (accounts) {
                     });
 
                     it('emits an approval event', async function () {
-                        expectEvent(
+                        await expectEvent(
                             await this.token.decreaseAllowance(spender, approvedAmount, {
                                 from: initialHolder,
                             }),
@@ -157,7 +157,7 @@ contract('ElasticERC20', function (accounts) {
 
             describe('when the sender has enough balance', function () {
                 it('emits an approval event', async function () {
-                    expectEvent(
+                    await expectEvent(
                         await this.token.increaseAllowance(spender, amount, {
                             from: initialHolder,
                         }),
@@ -199,7 +199,7 @@ contract('ElasticERC20', function (accounts) {
                 const amount = mulNorm(initialSupply).addn(1);
 
                 it('emits an approval event', async function () {
-                    expectEvent(
+                    await expectEvent(
                         await this.token.increaseAllowance(spender, amount, {
                             from: initialHolder,
                         }),
@@ -280,7 +280,7 @@ contract('ElasticERC20', function (accounts) {
             });
 
             it('emits Transfer event', async function () {
-                const event = expectEvent(this.receipt, 'Transfer', {
+                const event = await expectEvent(this.receipt, 'Transfer', {
                     from: ZERO_ADDRESS,
                     to: recipient,
                 });
@@ -342,7 +342,7 @@ contract('ElasticERC20', function (accounts) {
                     });
 
                     it('emits Transfer event', async function () {
-                        const event = expectEvent(this.receipt, 'Transfer', {
+                        const event = await expectEvent(this.receipt, 'Transfer', {
                             from: initialHolder,
                             to: ZERO_ADDRESS,
                         });

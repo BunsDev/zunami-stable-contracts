@@ -12,7 +12,7 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
     uint256 public constant FEE_DENOMINATOR = 1000000; // 100.0000%
     uint256 public constant MAX_FEE = 50000; // 5%
 
-    uint256 public feePercent;
+    uint256 public withdrawFee;
     address public feeDistributor;
 
     uint256 public dailyDepositDuration; // in blocks
@@ -36,7 +36,6 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
 
     constructor(address priceOracle_) {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(REBALANCER_ROLE, msg.sender);
 
         require(priceOracle_ != address(0), 'Zero price oracle');
         priceOracle = IAssetPriceOracle(priceOracle_);
@@ -74,7 +73,7 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
 
     function changeWithdrawFee(uint256 withdrawFee_) public onlyRole(DEFAULT_ADMIN_ROLE) {
         require(withdrawFee_ <= MAX_FEE, 'Bigger that MAX_FEE constant');
-        feePercent = withdrawFee_;
+        withdrawFee = withdrawFee_;
 
         emit WithdrawFeeChanged(withdrawFee_);
     }
@@ -126,9 +125,9 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
     ) internal view override returns (uint256 valueFee, uint256 nominalFee) {
         valueFee = 0;
         nominalFee = 0;
-        if (feePercent > 0 && !hasRole(REBALANCER_ROLE, caller)) {
-            nominalFee = nominal.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
-            valueFee = value.mulDiv(feePercent, FEE_DENOMINATOR, Math.Rounding.Down);
+        if (withdrawFee > 0 && !hasRole(REBALANCER_ROLE, caller)) {
+            nominalFee = nominal.mulDiv(withdrawFee, FEE_DENOMINATOR, Math.Rounding.Down);
+            valueFee = value.mulDiv(withdrawFee, FEE_DENOMINATOR, Math.Rounding.Down);
         }
     }
 

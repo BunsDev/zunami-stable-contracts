@@ -60,16 +60,16 @@ contract('ElasticVault', function (accounts) {
 
             const { tx } = await this.vault.deposit(parseToken(1), recipient, { from: holder });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: holder,
                 to: this.vault.address,
                 value: parseToken(1),
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: parseShare(1),
+                value: "1500000000000000000", // parseShare(1.5),
             });
         });
 
@@ -79,13 +79,13 @@ contract('ElasticVault', function (accounts) {
 
             const { tx } = await this.vault.withdraw('0', recipient, holder, { from: holder });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: recipient,
                 value: '0',
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: holder,
                 to: constants.ZERO_ADDRESS,
                 value: '0',
@@ -112,16 +112,16 @@ contract('ElasticVault', function (accounts) {
 
             const { tx } = await this.vault.deposit(parseToken(1), recipient, { from: holder });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: holder,
                 to: this.vault.address,
                 value: parseToken(1),
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: parseShare(1),
+                value: "1500000000000000000",//parseShare(1.5),
             });
         });
 
@@ -131,13 +131,13 @@ contract('ElasticVault', function (accounts) {
 
             const { tx } = await this.vault.withdraw('0', recipient, holder, { from: holder });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: recipient,
                 value: '0',
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: holder,
                 to: constants.ZERO_ADDRESS,
                 value: '0',
@@ -160,16 +160,16 @@ contract('ElasticVault', function (accounts) {
             // Can deposit 0 (max deposit)
             const { tx } = await this.vault.deposit(0, recipient, { from: holder });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: holder,
                 to: this.vault.address,
-                value: 0,
+                value: "0",
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: 0,
+                value: "0",
             });
 
             // Cannot deposit more than 0
@@ -189,13 +189,13 @@ contract('ElasticVault', function (accounts) {
 
             const { tx } = await this.vault.withdraw('0', recipient, holder, { from: holder });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: recipient,
                 value: '0',
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: holder,
                 to: constants.ZERO_ADDRESS,
                 value: '0',
@@ -223,16 +223,16 @@ contract('ElasticVault', function (accounts) {
 
             const { tx } = await this.vault.deposit(parseToken(1), recipient, { from: holder });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: holder,
                 to: this.vault.address,
                 value: parseToken(1),
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: parseShare(100),
+                value: "1500000000000000000",// parseShare(1.5),
             });
         });
 
@@ -248,16 +248,16 @@ contract('ElasticVault', function (accounts) {
                 from: holder,
             });
 
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: recipient,
-                value: parseToken(1),
+                value: "666666666666666667",
             });
 
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: holder,
                 to: constants.ZERO_ADDRESS,
-                value: parseShare(100),
+                value: parseShare(1),
             });
         });
 
@@ -294,12 +294,12 @@ contract('ElasticVault', function (accounts) {
         // 1. Alice mints 2000 shares (costs 2000 tokens)
         {
             const { tx } = await this.vault.deposit(2000, user1, { from: user1 });
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: user1,
                 to: this.vault.address,
                 value: '2000',
             });
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: user1,
                 value: '2000',
@@ -321,12 +321,12 @@ contract('ElasticVault', function (accounts) {
         // 2. Bob deposits 4000 tokens (mints 4000 shares)
         {
             const { tx } = await this.vault.deposit(4000, user2, { from: user2 });
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: user2,
                 to: this.vault.address,
                 value: '4000',
             });
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: user2,
                 value: '4000',
@@ -368,15 +368,15 @@ contract('ElasticVault', function (accounts) {
         // 4. Alice deposits 2000 tokens (mints 1333 shares)
         {
             const { tx } = await this.vault.deposit(2000, user1, { from: user1 });
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: user1,
                 to: this.vault.address,
                 value: '2000',
             });
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: user1,
-                value: '2000',
+                value: '3000',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('6000');
@@ -414,15 +414,15 @@ contract('ElasticVault', function (accounts) {
         // 6. Alice withdraw 2428 assets (1349 shares)
         {
             const { tx } = await this.vault.withdraw(2428, user1, user1, { from: user1 });
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: user1,
                 to: constants.ZERO_ADDRESS,
-                value: '1333',
+                value: '2428',
             });
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user1,
-                value: '2428',
+                value: '1349',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4771');
@@ -444,15 +444,15 @@ contract('ElasticVault', function (accounts) {
         // 7. Bob withdraws 2929 assets (1608 shares)
         {
             const { tx } = await this.vault.withdraw(2929, user2, user2, { from: user2 });
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: user2,
                 to: constants.ZERO_ADDRESS,
-                value: '1608',
+                value: '2929',
             });
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user2,
-                value: '2929',
+                value: '1628',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4771');
@@ -493,15 +493,15 @@ contract('ElasticVault', function (accounts) {
         // NOTE: Bob's assets have been rounded back up
         {
             const { tx } = await this.vault.withdraw(5567, user1, user1, { from: user1 });
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: user1,
                 to: constants.ZERO_ADDRESS,
-                value: '2000',
+                value: '5567',
             });
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user1,
-                value: '3643',
+                value: '2651',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('0');
@@ -522,15 +522,15 @@ contract('ElasticVault', function (accounts) {
         // 10. Bob withdraw all
         {
             const { tx } = await this.vault.withdrawAll(user2, user2, { from: user2 });
-            expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: user2,
                 to: constants.ZERO_ADDRESS,
-                value: '4392',
+                value: '4981',
             });
-            expectEvent.inTransaction(tx, this.token, 'Transfer', {
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user2,
-                value: '8001',
+                value: '2372',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('0');
