@@ -46,7 +46,7 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
     }
 
     function changeDailyDepositParams(uint256 dailyDepositDuration_, uint256 dailyDepositLimit_)
-        public
+        external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         dailyDepositDuration = dailyDepositDuration_;
@@ -59,7 +59,7 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
     }
 
     function changeDailyWithdrawParams(uint256 dailyWithdrawDuration_, uint256 dailyWithdrawLimit_)
-        public
+        external
         onlyRole(DEFAULT_ADMIN_ROLE)
     {
         dailyWithdrawDuration = dailyWithdrawDuration_;
@@ -71,14 +71,14 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
         emit DailyWithdrawParamsChanged(dailyWithdrawDuration_, dailyWithdrawLimit_);
     }
 
-    function changeWithdrawFee(uint256 withdrawFee_) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeWithdrawFee(uint256 withdrawFee_) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(withdrawFee_ <= MAX_FEE, 'Bigger that MAX_FEE constant');
         withdrawFee = withdrawFee_;
 
         emit WithdrawFeeChanged(withdrawFee_);
     }
 
-    function changeFeeDistributor(address feeDistributor_) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function changeFeeDistributor(address feeDistributor_) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(feeDistributor_ != address(0), 'Zero fee distributor');
         feeDistributor = feeDistributor_;
 
