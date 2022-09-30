@@ -34,12 +34,6 @@ describe('PricableAsset mock tests', async () => {
         expect(await pricableAssetContract.assetPrice()).to.eq(utils.parseEther('555'));
     });
 
-    // it('should be reverted in case a zero price oracle', async () => {
-    //     await expect(
-    //         pricableAssetContract.changePriceOracle(ethers.constants.AddressZero)
-    //     ).revertedWith('Zero price oracle');
-    // });
-
     it('should return cached price when current price decreased ', async () => {
         const cachedPrice = utils.parseEther('555');
 

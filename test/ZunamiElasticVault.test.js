@@ -1,4 +1,4 @@
-const { BN, constants, expectEvent, expectRevert, snapshot, time } = require('@openzeppelin/test-helpers');
+const { BN, constants, expectRevert, snapshot, time } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const ERC20DecimalsMock = artifacts.require('ERC20DecimalsMock');
@@ -8,9 +8,6 @@ const AssetPriceOracleMock = artifacts.require('AssetPriceOracleMock');
 const one = new BN(10).pow(new BN(18));
 const parseToken = (token) => new BN(token).mul(one);
 const parseShare = (share) => new BN(share).mul(one);
-
-const mulNorm = (amount, price) => new BN(amount).mul(new BN(price)).div(one);
-const divNorm = (amount, price) => new BN(amount).mul(one).div(new BN(price));
 
 contract('ZunamiElasticVault', function (accounts) {
     const [holder, recipient, spender, other, user1, user2] = accounts;
@@ -162,7 +159,7 @@ contract('ZunamiElasticVault', function (accounts) {
             expect(await this.vault.dailyDepositTotal()).to.be.bignumber.equal("0");
         });
 
-        it.only('withdraw', async function () {
+        it('withdraw', async function () {
             await this.token.mint(holder, web3.utils.toWei('10000'));
             await this.vault.deposit(parseShare(10000), holder, { from: holder });
 

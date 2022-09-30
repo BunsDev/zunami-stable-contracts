@@ -232,7 +232,7 @@ contract('ElasticERC20', function (accounts) {
 
                         expect(
                             await this.token.allowance(initialHolder, spender)
-                        ).to.be.bignumber.equal(amount.addn(1).addn(1)); //TODO: 1 * 1.5 rounded to 2
+                        ).to.be.bignumber.equal(amount.addn(2)); // rounding
                     });
                 });
             });

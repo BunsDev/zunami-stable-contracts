@@ -173,7 +173,6 @@ contract('ElasticVault', function (accounts) {
             });
 
             // Cannot deposit more than 0
-            //TODO //await expectRevert.unspecified(this.vault.previewDeposit(parseToken(1)));
             await expectRevert(
                 this.vault.deposit(parseToken(1), recipient, { from: holder }),
                 'ERC4626: deposit more than max'
@@ -185,8 +184,6 @@ contract('ElasticVault', function (accounts) {
                 mulNorm(parseToken(1), updatedPrice)
             );
             expect(await this.vault.previewWithdraw('0')).to.be.bignumber.equal('0');
-            //TODO //await expectRevert.unspecified(this.vault.previewWithdraw('1'));
-
             const { tx } = await this.vault.withdraw('0', recipient, holder, { from: holder });
 
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
@@ -241,8 +238,8 @@ contract('ElasticVault', function (accounts) {
                 mulNorm(parseToken(100), updatedPrice)
             );
             expect(await this.vault.previewWithdraw(parseToken(1))).to.be.bignumber.equal(
-                divNorm(parseShare(1), updatedPrice).addn(1)
-            ); //TODO: fix
+                divNorm(parseShare(1), updatedPrice).addn(1) // rounding UP
+            );
 
             const { tx } = await this.vault.withdraw(parseToken(1), recipient, holder, {
                 from: holder,

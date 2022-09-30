@@ -133,7 +133,7 @@ function shouldBehaveLikeElasticERC20(
                 });
 
                 describe('when the spender does not have enough allowance', function () {
-                    const allowance = mulNorm(initialSupply, assetPrice).subn(2); //TODO: fix rounding
+                    const allowance = mulNorm(initialSupply, assetPrice).subn(2); //rounding
 
                     beforeEach(async function () {
                         await this.token.approve(spender, allowance, { from: tokenOwner });
@@ -243,7 +243,7 @@ function shouldBehaveLikeElasticERC20Transfer(
 ) {
     describe('when the recipient is not the zero address', function () {
         describe('when the sender does not have enough balance', function () {
-            const amount = mulNorm(balance, assetPrice).addn(3); //TODO: make works works with 1
+            const amount = mulNorm(balance, assetPrice).addn(2); // rounding
 
             it('reverts', async function () {
                 await expectRevert(
