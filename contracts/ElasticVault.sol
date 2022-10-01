@@ -6,7 +6,6 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import '@openzeppelin/contracts/utils/math/Math.sol';
 import './ElasticERC20.sol';
 import './interfaces/IElasticVault.sol';
-import './interfaces/IElasticVaultMigrator.sol';
 
 /**
  * @dev OpenZeppelin v4.7.0 ERC4626 fork
