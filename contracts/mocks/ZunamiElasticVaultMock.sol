@@ -9,7 +9,9 @@ contract ZunamiElasticVaultMock is ZunamiElasticVault {
         address priceOracle,
         string memory name,
         string memory symbol
-    ) ElasticERC20(name, symbol) ElasticVault(asset) ZunamiElasticVault(priceOracle) {}
+    ) ElasticERC20(name, symbol) ElasticVault(asset) ZunamiElasticVault(priceOracle) {
+        cacheAssetPrice();
+    }
 
     function mockMint(
         address account,

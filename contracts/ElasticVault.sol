@@ -37,66 +37,59 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         override
         returns (uint256 nominal)
     {
-        return _convertToNominal(value, Math.Rounding.Down);
+        return _convertToNominalCached(value, Math.Rounding.Down);
     }
 
-    /** @dev See {IERC4262-convertToAssets}. */
     function convertToValue(uint256 nominal) public view virtual override returns (uint256 value) {
-        return _convertFromNominal(nominal, Math.Rounding.Down);
+        return _convertFromNominalCached(nominal, Math.Rounding.Down);
     }
 
-    /** @dev See {IERC4262-maxDeposit}. */
     function maxDeposit(address) public view virtual override returns (uint256) {
         return _isVaultCollateralized() ? type(uint256).max : 0;
     }
 
-    /** @dev See {IERC4262-maxWithdraw}. */
     function maxWithdraw(address owner) public view virtual override returns (uint256) {
         return balanceOf(owner);
     }
 
-    function _maxWithdrawCached(address owner) public returns (uint256) {
-        return _convertFromNominalCached(balanceOfNominal(owner), Math.Rounding.Down);
+    function _maxWithdrawWithCaching(address owner) internal returns (uint256) {
+        return _convertFromNominalWithCaching(balanceOfNominal(owner), Math.Rounding.Down);
     }
 
-    /** @dev See {IERC4262-previewDeposit}. */
     function previewDeposit(uint256 nominal) public view virtual override returns (uint256) {
-        return _convertFromNominal(nominal, Math.Rounding.Down);
-    }
-
-    function _previewDepositCached(uint256 nominal) internal virtual returns (uint256) {
         return _convertFromNominalCached(nominal, Math.Rounding.Down);
     }
 
-    /** @dev See {IERC4262-previewWithdraw}. */
+    function _previewDepositWithCaching(uint256 nominal) internal virtual returns (uint256) {
+        return _convertFromNominalWithCaching(nominal, Math.Rounding.Down);
+    }
+
     function previewWithdraw(uint256 value) public view virtual override returns (uint256) {
-        (uint256 valueFee, ) = _calcFee(_msgSender(), value, 0);
-        return _convertToNominal(value - valueFee, Math.Rounding.Up);
+        uint256 nominalFee = _calcFee(_msgSender(), _convertToNominalCached(value, Math.Rounding.Down));
+        return _convertToNominalCached(value, Math.Rounding.Down) - nominalFee;
     }
 
-    function _previewWithdrawCached(uint256 value) internal virtual returns (uint256) {
-        return _convertToNominalCached(value, Math.Rounding.Up);
+    function _previewWithdrawWithCaching(uint256 value) internal virtual returns (uint256) {
+        return _convertToNominalWithCaching(value, Math.Rounding.Down);
     }
 
-    /** @dev See {IERC4262-deposit}. */
     function deposit(uint256 nominal, address receiver) public virtual override returns (uint256) {
-        require(nominal <= maxDeposit(receiver), 'ERC4626: deposit more than max');
+        require(nominal <= maxDeposit(receiver), 'ElasticVault: deposit more than max');
 
-        uint256 value = _previewDepositCached(nominal);
+        uint256 value = _previewDepositWithCaching(nominal);
         _deposit(_msgSender(), receiver, value, nominal);
 
         return nominal;
     }
 
-    /** @dev See {IERC4262-withdraw}. */
     function withdraw(
         uint256 value,
         address receiver,
         address owner
     ) public virtual override returns (uint256) {
-        require(value <= _maxWithdrawCached(owner), 'ERC4626: withdraw more than max');
+        require(value <= _maxWithdrawWithCaching(owner), 'ElasticVault: withdraw more than max');
 
-        uint256 nominal = _previewWithdrawCached(value);
+        uint256 nominal = _previewWithdrawWithCaching(value);
         _withdraw(_msgSender(), receiver, owner, value, nominal);
 
         return nominal;
@@ -104,7 +97,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
 
     function withdrawAll(address receiver, address owner) public virtual returns (uint256) {
         uint256 nominal = balanceOfNominal(owner);
-        uint256 value = _maxWithdrawCached(owner);
+        uint256 value = _maxWithdrawWithCaching(owner);
         _withdraw(_msgSender(), receiver, owner, value, nominal);
 
         return nominal;
@@ -151,13 +144,12 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
 
     function _calcFee(
         address,
-        uint256,
         uint256
-    ) internal view virtual returns (uint256 valueFee, uint256 nominalFee) {
-        return (0, 0);
+    ) internal view virtual returns (uint256 nominalFee) {
+        return 0;
     }
 
-    function _withdrawFee(uint256 value, uint256 nominal) internal virtual {}
+    function _withdrawFee(uint256 nominal) internal virtual {}
 
     /**
      * @dev Withdraw/redeem common workflow.
@@ -175,10 +167,8 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
             _spendAllowance(owner, caller, value);
         }
 
-        (uint256 valueFee, uint256 nominalFee) = _calcFee(caller, value, nominal);
-        nominal -= nominalFee;
-        value -= valueFee;
-        _withdrawFee(valueFee, nominalFee);
+        uint256 nominalFee = _calcFee(caller, nominal);
+        _withdrawFee(nominalFee);
 
         // If _asset is ERC777, `transfer` can trigger a reentrancy AFTER the transfer happens through the
         // `tokensReceived` hook. On the other hand, the `tokensToSend` hook, that is triggered before the transfer,
@@ -187,9 +177,9 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         // Conclusion: we need to do the transfer after the burn so that any reentrancy would happen after the
         // nominal are burned and after the value are transfered, which is a valid state.
         _burn(owner, nominal, value);
-        SafeERC20.safeTransfer(IERC20Metadata(asset()), receiver, nominal);
+        SafeERC20.safeTransfer(IERC20Metadata(asset()), receiver, nominal - nominalFee);
 
-        emit Withdraw(caller, receiver, owner, value, nominal, valueFee);
+        emit Withdraw(caller, receiver, owner, value, nominal, nominalFee);
     }
 
     function _isVaultCollateralized() private view returns (bool) {

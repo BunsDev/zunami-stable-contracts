@@ -15,6 +15,8 @@ contract ElasticERC20Mock is ElasticERC20, PricableAssetMock {
         uint256 initialNominalBalance,
         uint256 initialBalance
     ) payable ElasticERC20(name, symbol) PricableAssetMock(priceOracle) {
+        cacheAssetPrice();
+
         if (initialAccount != address(0)) {
             _mint(initialAccount, initialNominalBalance, initialBalance);
         }

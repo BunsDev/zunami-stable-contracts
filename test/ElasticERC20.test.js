@@ -39,6 +39,7 @@ contract('ElasticERC20', function (accounts) {
             initialSupply
         );
         await this.assetPricer.setAssetPriceInternal(updatedPrice);
+        await this.token.cacheAssetPrice();
     });
 
     it('has a name', async function () {

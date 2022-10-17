@@ -19,7 +19,6 @@ const config: HardhatUserConfig = {
         coinmarketcap: process.env.COINMARKETCAP_API_KEY,
         showTimeSpent: true,
         enabled: true,
-        outputFile: './gas_report',
     },
     paths: {
         sources: './contracts',
@@ -84,7 +83,7 @@ const config: HardhatUserConfig = {
             chainId: 1,
             gas: 'auto',
             gasMultiplier: 1.2,
-            gasPrice: 8000000000,
+            gasPrice: 15000000000,
             accounts: [`${process.env.PRIVATE_KEY}`],
             loggingEnabled: true,
         },

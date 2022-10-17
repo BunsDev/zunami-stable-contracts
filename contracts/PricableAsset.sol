@@ -4,38 +4,40 @@ pragma solidity ^0.8.0;
 import './interfaces/IAssetPriceOracle.sol';
 
 abstract contract PricableAsset {
-    uint256 private _cachedBlock;
-    uint256 private _cachedAssetPrice;
+    uint256 private _blockCached;
+    uint256 private _assetPriceCached;
 
     event CachedAssetPrice(uint256 blockNumber, uint256 assetPrice);
 
+    function assetPriceCacheDuration() public view virtual returns (uint256);
+
     function assetPrice() public view virtual returns (uint256);
 
-    function assetPriceCachedParams()
-        public
-        view
-        virtual
-        returns (uint256 cachedBlock, uint256 cachedAssetPrice)
-    {
-        cachedBlock = _cachedBlock;
-        cachedAssetPrice = _cachedAssetPrice;
+    function assetPriceCached() public view virtual returns (uint256) {
+        return _assetPriceCached;
     }
 
-    function assetPriceCached() public virtual returns (uint256) {
-        if (block.number != _cachedBlock) {
-            _cachedBlock = block.number;
-            uint256 currentAssetPrice = assetPrice();
-            if (_cachedAssetPrice < currentAssetPrice) {
-                _cachedAssetPrice = currentAssetPrice;
-                emit CachedAssetPrice(_cachedBlock, _cachedAssetPrice);
-            }
+    function blockCached() public view virtual returns (uint256) {
+        return _blockCached;
+    }
+
+    function cacheAssetPrice() public virtual {
+        _blockCached = block.number;
+        uint256 currentAssetPrice = assetPrice();
+        if (_assetPriceCached < currentAssetPrice) {
+            _assetPriceCached = currentAssetPrice;
+            emit CachedAssetPrice(_blockCached, _assetPriceCached);
         }
-
-        return _cachedAssetPrice;
     }
 
-    function resetPriceCache() internal virtual {
-        _cachedBlock = 0;
-        _cachedAssetPrice = 0;
+    function _cacheAssetPriceByBlock() internal virtual {
+        if (block.number >= _blockCached + assetPriceCacheDuration()) {
+            cacheAssetPrice();
+        }
+    }
+
+    function _resetPriceCache() internal virtual {
+        _blockCached = 0;
+        _assetPriceCached = 0;
     }
 }

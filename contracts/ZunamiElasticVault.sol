@@ -28,7 +28,10 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
     uint256 public dailyWithdrawCountingBlock; // start block of limit counting
 
     IAssetPriceOracle public priceOracle;
+
+    uint256 private _assetPriceCacheDuration = 1200; // cache every 4 hour
     
+    event AssetPriceCacheDurationSet(uint256 newAssetPriceCacheDuration, uint256 oldAssetPriceCacheDuration);
     event DailyDepositParamsChanged(uint256 dailyDepositDuration, uint256 dailyDepositLimit);
     event DailyWithdrawParamsChanged(uint256 dailyWithdrawDuration, uint256 dailyWithdrawLimit);
     event WithdrawFeeChanged(uint256 withdrawFee);
@@ -39,10 +42,21 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
 
         require(priceOracle_ != address(0), 'Zero price oracle');
         priceOracle = IAssetPriceOracle(priceOracle_);
+
+        cacheAssetPrice();
     }
 
     function assetPrice() public view override returns (uint256) {
         return priceOracle.lpPrice();
+    }
+
+    function assetPriceCacheDuration() public view override returns (uint256) {
+        return _assetPriceCacheDuration;
+    }
+
+    function setAssetPriceCacheDuration(uint256 assetPriceCacheDuration_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        emit AssetPriceCacheDurationSet(assetPriceCacheDuration_, _assetPriceCacheDuration);
+        _assetPriceCacheDuration = assetPriceCacheDuration_;
     }
 
     function changeDailyDepositParams(uint256 dailyDepositDuration_, uint256 dailyDepositLimit_)
@@ -120,20 +134,17 @@ abstract contract ZunamiElasticVault is ElasticVault, AccessControl {
 
     function _calcFee(
         address caller,
-        uint256 value,
         uint256 nominal
-    ) internal view override returns (uint256 valueFee, uint256 nominalFee) {
-        valueFee = 0;
+    ) internal view override returns (uint256 nominalFee) {
         nominalFee = 0;
         if (withdrawFee > 0 && !hasRole(REBALANCER_ROLE, caller)) {
             nominalFee = nominal.mulDiv(withdrawFee, FEE_DENOMINATOR, Math.Rounding.Down);
-            valueFee = value.mulDiv(withdrawFee, FEE_DENOMINATOR, Math.Rounding.Down);
         }
     }
 
-    function _withdrawFee(uint256 valueFee, uint256) internal override {
-        if (valueFee > 0) {
-            SafeERC20.safeTransfer(IERC20Metadata(asset()), feeDistributor, valueFee);
+    function _withdrawFee(uint256 nominalFee) internal override {
+        if (nominalFee > 0) {
+            SafeERC20.safeTransfer(IERC20Metadata(asset()), feeDistributor, nominalFee);
         }
     }
 }

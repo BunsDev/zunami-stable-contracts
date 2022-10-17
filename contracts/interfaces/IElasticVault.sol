@@ -8,14 +8,14 @@ import '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
  * @dev OpenZeppelin v4.7.0 IERC4626 fork
  */
 interface IElasticVault is IERC20, IERC20Metadata {
-    event Deposit(address indexed caller, address indexed owner, uint256 assets, uint256 shares);
+    event Deposit(address indexed caller, address indexed owner, uint256 value, uint256 nominal);
 
     event Withdraw(
         address indexed caller,
         address indexed receiver,
         address indexed owner,
-        uint256 assets,
-        uint256 shares,
+        uint256 value,
+        uint256 nominal,
         uint256 fee
     );
 

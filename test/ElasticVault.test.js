@@ -36,6 +36,7 @@ contract('ElasticVault', function (accounts) {
         await this.token.approve(this.vault.address, constants.MAX_UINT256, { from: holder });
         await this.vault.approve(spender, constants.MAX_UINT256, { from: holder });
         await this.assetPricer.setAssetPriceInternal(updatedPrice);
+        await this.vault.cacheAssetPrice();
     });
 
     it('metadata', async function () {
@@ -175,7 +176,7 @@ contract('ElasticVault', function (accounts) {
             // Cannot deposit more than 0
             await expectRevert(
                 this.vault.deposit(parseToken(1), recipient, { from: holder }),
-                'ERC4626: deposit more than max'
+                'ElasticVault: deposit more than max'
             );
         });
 
@@ -238,7 +239,7 @@ contract('ElasticVault', function (accounts) {
                 mulNorm(parseToken(100), updatedPrice)
             );
             expect(await this.vault.previewWithdraw(parseToken(1))).to.be.bignumber.equal(
-                divNorm(parseShare(1), updatedPrice).addn(1) // rounding UP
+                divNorm(parseShare(1), updatedPrice)
             );
 
             const { tx } = await this.vault.withdraw(parseToken(1), recipient, holder, {
@@ -347,6 +348,7 @@ contract('ElasticVault', function (accounts) {
 
         // 3. Vault mutates by asset price 1.5 per asset
         await this.assetPricer.setAssetPriceInternal(updatedPrice);
+        await this.vault.cacheAssetPrice();
         expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('3000');
         expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2000');
         expect(await this.vault.previewWithdraw(3000)).to.be.bignumber.equal('2000');
@@ -394,6 +396,7 @@ contract('ElasticVault', function (accounts) {
 
         // 5. Vault mutates by asset price 1.8 per asset
         await this.assetPricer.setAssetPriceInternal(new BN('1800000000000000000'));
+        await this.vault.cacheAssetPrice();
 
         expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('7200');
         expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('4000');
@@ -419,7 +422,7 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user1,
-                value: '1349',
+                value: '1348',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4771');
@@ -470,6 +473,7 @@ contract('ElasticVault', function (accounts) {
 
         // 8. Vault mutates by asset price 2.1 per asset
         await this.assetPricer.setAssetPriceInternal(new BN('2100000000000000000'));
+        await this.vault.cacheAssetPrice();
 
         expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('5567');
         expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2651');
