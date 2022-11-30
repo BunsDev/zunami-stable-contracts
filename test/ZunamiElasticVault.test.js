@@ -106,7 +106,7 @@ contract('ZunamiElasticVault', function (accounts) {
             expect(await this.token.balanceOf(this.vault.address)).to.be.bignumber.equal("0");
         });
 
-        it.only('should be withdraw', async function () {
+        it('should be withdraw', async function () {
             await this.vault.changeWithdrawFee(10000); //1%
             await this.vault.changeFeeDistributor(other);
 

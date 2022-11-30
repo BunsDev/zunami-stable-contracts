@@ -249,7 +249,7 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: recipient,
-                value: "666666666666666667",
+                value: "666666666666666666",
             });
 
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
@@ -364,7 +364,7 @@ contract('ElasticVault', function (accounts) {
         expect(await this.vault.totalSupply()).to.be.bignumber.equal('9000');
         expect(await this.vault.totalAssets()).to.be.bignumber.equal('6000');
 
-        // 4. Alice deposits 2000 tokens (mints 1333 shares)
+        // 4. Alice deposits 2000 tokens (mints 3000 shares)
         {
             const { tx } = await this.vault.deposit(2000, user1, { from: user1 });
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
@@ -411,7 +411,7 @@ contract('ElasticVault', function (accounts) {
         expect(await this.vault.totalSupply()).to.be.bignumber.equal('14400');
         expect(await this.vault.totalAssets()).to.be.bignumber.equal('8000');
 
-        // 6. Alice withdraw 2428 assets (1349 shares)
+        // 6. Alice withdraw 2428 assets (1348 shares)
         {
             const { tx } = await this.vault.withdraw(2428, user1, user1, { from: user1 });
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
@@ -425,23 +425,23 @@ contract('ElasticVault', function (accounts) {
                 value: '1348',
             });
 
-            expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4771');
-            expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2651');
-            expect(await this.vault.previewWithdraw(4771)).to.be.bignumber.equal('2651');
+            expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4773');
+            expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2652');
+            expect(await this.vault.previewWithdraw(4773)).to.be.bignumber.equal('2651');
             expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('7200');
             expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('4000');
             expect(await this.vault.previewWithdraw(7200)).to.be.bignumber.equal('4000');
             expect(
                 await this.vault.convertToValue(await this.vault.balanceOfNominal(user1))
-            ).to.be.bignumber.equal('4771');
+            ).to.be.bignumber.equal('4773');
             expect(
                 await this.vault.convertToValue(await this.vault.balanceOfNominal(user2))
             ).to.be.bignumber.equal('7200');
-            expect(await this.vault.totalSupply()).to.be.bignumber.equal('11971');
-            expect(await this.vault.totalAssets()).to.be.bignumber.equal('6651');
+            expect(await this.vault.totalSupply()).to.be.bignumber.equal('11973');
+            expect(await this.vault.totalAssets()).to.be.bignumber.equal('6652');
         }
 
-        // 7. Bob withdraws 2929 assets (1608 shares)
+        // 7. Bob withdraws 2929 assets (1627 shares)
         {
             const { tx } = await this.vault.withdraw(2929, user2, user2, { from: user2 });
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
@@ -452,52 +452,52 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user2,
-                value: '1628',
+                value: '1627',
             });
 
-            expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4771');
-            expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2651');
-            expect(await this.vault.previewWithdraw(4771)).to.be.bignumber.equal('2651');
-            expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('4269');
-            expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('2372');
-            expect(await this.vault.previewWithdraw(4269)).to.be.bignumber.equal('2372');
+            expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4773');
+            expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2652');
+            expect(await this.vault.previewWithdraw(4773)).to.be.bignumber.equal('2651');
+            expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('4271');
+            expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('2373');
+            expect(await this.vault.previewWithdraw(4271)).to.be.bignumber.equal('2372');
             expect(
                 await this.vault.convertToValue(await this.vault.balanceOfNominal(user1))
-            ).to.be.bignumber.equal('4771');
+            ).to.be.bignumber.equal('4773');
             expect(
                 await this.vault.convertToValue(await this.vault.balanceOfNominal(user2))
-            ).to.be.bignumber.equal('4269');
-            expect(await this.vault.totalSupply()).to.be.bignumber.equal('9041');
-            expect(await this.vault.totalAssets()).to.be.bignumber.equal('5023');
+            ).to.be.bignumber.equal('4271');
+            expect(await this.vault.totalSupply()).to.be.bignumber.equal('9045');
+            expect(await this.vault.totalAssets()).to.be.bignumber.equal('5025');
         }
 
         // 8. Vault mutates by asset price 2.1 per asset
         await this.assetPricer.setAssetPriceInternal(new BN('2100000000000000000'));
         await this.vault.cacheAssetPrice();
 
-        expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('5567');
-        expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2651');
-        expect(await this.vault.previewWithdraw(5567)).to.be.bignumber.equal('2651');
-        expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('4981');
-        expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('2372');
-        expect(await this.vault.previewWithdraw(4981)).to.be.bignumber.equal('2372');
+        expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('5569');
+        expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('2652');
+        expect(await this.vault.previewWithdraw(5569)).to.be.bignumber.equal('2651');
+        expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('4983');
+        expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('2373');
+        expect(await this.vault.previewWithdraw(4983)).to.be.bignumber.equal('2372');
         expect(
             await this.vault.convertToValue(await this.vault.balanceOfNominal(user1))
-        ).to.be.bignumber.equal('5567');
+        ).to.be.bignumber.equal('5569');
         expect(
             await this.vault.convertToValue(await this.vault.balanceOfNominal(user2))
-        ).to.be.bignumber.equal('4981');
-        expect(await this.vault.totalSupply()).to.be.bignumber.equal('10548');
-        expect(await this.vault.totalAssets()).to.be.bignumber.equal('5023');
+        ).to.be.bignumber.equal('4983');
+        expect(await this.vault.totalSupply()).to.be.bignumber.equal('10552');
+        expect(await this.vault.totalAssets()).to.be.bignumber.equal('5025');
 
-        // 9. Alice withdraws all 5567 assets
+        // 9. Alice withdraws all 5569 assets
         // NOTE: Bob's assets have been rounded back up
         {
-            const { tx } = await this.vault.withdraw(5567, user1, user1, { from: user1 });
+            const { tx } = await this.vault.withdraw(5569, user1, user1, { from: user1 });
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: user1,
                 to: constants.ZERO_ADDRESS,
-                value: '5567',
+                value: '5569',
             });
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
@@ -505,19 +505,19 @@ contract('ElasticVault', function (accounts) {
                 value: '2651',
             });
 
-            expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('0');
-            expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('0');
-            expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('4981');
-            expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('2372');
-            expect(await this.vault.previewWithdraw(4981)).to.be.bignumber.equal('2372');
+            expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('2');
+            expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('1');
+            expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('4983');
+            expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('2373');
+            expect(await this.vault.previewWithdraw(4983)).to.be.bignumber.equal('2372');
             expect(
                 await this.vault.convertToValue(await this.vault.balanceOfNominal(user1))
-            ).to.be.bignumber.equal('0');
+            ).to.be.bignumber.equal('2');
             expect(
                 await this.vault.convertToValue(await this.vault.balanceOfNominal(user2))
-            ).to.be.bignumber.equal('4981');
-            expect(await this.vault.totalSupply()).to.be.bignumber.equal('4981');
-            expect(await this.vault.totalAssets()).to.be.bignumber.equal('2372');
+            ).to.be.bignumber.equal('4983');
+            expect(await this.vault.totalSupply()).to.be.bignumber.equal('4985');
+            expect(await this.vault.totalAssets()).to.be.bignumber.equal('2374');
         }
 
         // 10. Bob withdraw all
@@ -526,12 +526,40 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: user2,
                 to: constants.ZERO_ADDRESS,
-                value: '4981',
+                value: '4983',
             });
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user2,
-                value: '2372',
+                value: '2373',
+            });
+
+            expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('2');
+            expect(await this.vault.balanceOfNominal(user1)).to.be.bignumber.equal('1');
+            expect(await this.vault.balanceOf(user2)).to.be.bignumber.equal('0');
+            expect(await this.vault.balanceOfNominal(user2)).to.be.bignumber.equal('0');
+            expect(
+                await this.vault.convertToValue(await this.vault.balanceOfNominal(user1))
+            ).to.be.bignumber.equal('2');
+            expect(
+                await this.vault.convertToValue(await this.vault.balanceOfNominal(user2))
+            ).to.be.bignumber.equal('0');
+            expect(await this.vault.totalSupply()).to.be.bignumber.equal('2');
+            expect(await this.vault.totalAssets()).to.be.bignumber.equal('1');
+        }
+
+        // 11. Alice withdraw all
+        {
+            const { tx } = await this.vault.withdrawAll(user1, user1, { from: user1 });
+            await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
+                from: user1,
+                to: constants.ZERO_ADDRESS,
+                value: '2',
+            });
+            await expectEvent.inTransaction(tx, this.token, 'Transfer', {
+                from: this.vault.address,
+                to: user1,
+                value: '1',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('0');

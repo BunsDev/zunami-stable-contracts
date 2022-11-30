@@ -52,10 +52,6 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         return balanceOf(owner);
     }
 
-    function _maxWithdrawWithCaching(address owner) internal returns (uint256) {
-        return _convertFromNominalWithCaching(balanceOfNominal(owner), Math.Rounding.Down);
-    }
-
     function previewDeposit(uint256 nominal) public view virtual override returns (uint256) {
         return _convertFromNominalCached(nominal, Math.Rounding.Down);
     }
@@ -87,9 +83,9 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
         address receiver,
         address owner
     ) public virtual override returns (uint256) {
-        require(value <= _maxWithdrawWithCaching(owner), 'ElasticVault: withdraw more than max');
-
         uint256 nominal = _previewWithdrawWithCaching(value);
+        require(nominal <= balanceOfNominal(owner), 'ElasticVault: withdraw more than max');
+
         _withdraw(_msgSender(), receiver, owner, value, nominal);
 
         return nominal;
@@ -97,7 +93,7 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
 
     function withdrawAll(address receiver, address owner) public virtual returns (uint256) {
         uint256 nominal = balanceOfNominal(owner);
-        uint256 value = _maxWithdrawWithCaching(owner);
+        uint256 value = balanceOf(owner);
         _withdraw(_msgSender(), receiver, owner, value, nominal);
 
         return nominal;
