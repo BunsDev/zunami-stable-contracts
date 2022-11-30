@@ -239,7 +239,7 @@ contract('ElasticVault', function (accounts) {
                 mulNorm(parseToken(100), updatedPrice)
             );
             expect(await this.vault.previewWithdraw(parseToken(1))).to.be.bignumber.equal(
-                divNorm(parseShare(1), updatedPrice)
+                divNorm(parseShare(1), updatedPrice).add(new BN(1))
             );
 
             const { tx } = await this.vault.withdraw(parseToken(1), recipient, holder, {
@@ -422,7 +422,7 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: user1,
-                value: '1348',
+                value: '1349',
             });
 
             expect(await this.vault.balanceOf(user1)).to.be.bignumber.equal('4771');

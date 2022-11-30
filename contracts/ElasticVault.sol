@@ -65,12 +65,12 @@ abstract contract ElasticVault is ElasticERC20, IElasticVault {
     }
 
     function previewWithdraw(uint256 value) public view virtual override returns (uint256) {
-        uint256 nominalFee = _calcFee(_msgSender(), _convertToNominalCached(value, Math.Rounding.Down));
-        return _convertToNominalCached(value, Math.Rounding.Down) - nominalFee;
+        uint256 nominalFee = _calcFee(_msgSender(), _convertToNominalCached(value, Math.Rounding.Up));
+        return _convertToNominalCached(value, Math.Rounding.Up) - nominalFee;
     }
 
     function _previewWithdrawWithCaching(uint256 value) internal virtual returns (uint256) {
-        return _convertToNominalWithCaching(value, Math.Rounding.Down);
+        return _convertToNominalWithCaching(value, Math.Rounding.Up);
     }
 
     function deposit(uint256 nominal, address receiver) public virtual override returns (uint256) {

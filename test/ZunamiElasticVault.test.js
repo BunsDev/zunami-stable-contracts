@@ -106,12 +106,12 @@ contract('ZunamiElasticVault', function (accounts) {
             expect(await this.token.balanceOf(this.vault.address)).to.be.bignumber.equal("0");
         });
 
-        it.only('should be withdraw', async function () {
+        it('should be withdraw', async function () {
             await this.vault.changeWithdrawFee(10000); //1%
             await this.vault.changeFeeDistributor(other);
 
             expect(await this.vault.previewWithdraw(parseToken(100))).to.be.bignumber.equal(
-                "66000000000000000000"
+                "66000000000000000001"
             );
 
             expect(await this.token.balanceOf(other)).to.be.bignumber.equal("0");
@@ -125,10 +125,10 @@ contract('ZunamiElasticVault', function (accounts) {
             });
 
             expect(await this.token.balanceOf(other)).to.be.bignumber.equal("666666666666666666");
-            expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal("66000000000000000000");
-            expect(await this.vault.balanceOf(holder)).to.be.bignumber.equal("50000000000000000001");
-            expect(await this.vault.balanceOfNominal(holder)).to.be.bignumber.equal("33333333333333333334");
-            expect(await this.token.balanceOf(this.vault.address)).to.be.bignumber.equal("33333333333333333334");
+            expect(await this.token.balanceOf(recipient)).to.be.bignumber.equal("66000000000000000001");
+            expect(await this.vault.balanceOf(holder)).to.be.bignumber.equal("49999999999999999999");
+            expect(await this.vault.balanceOfNominal(holder)).to.be.bignumber.equal("33333333333333333333");
+            expect(await this.token.balanceOf(this.vault.address)).to.be.bignumber.equal("33333333333333333333");
 
             await this.vault.withdrawAll(recipient, holder, {
                 from: holder,
@@ -148,7 +148,7 @@ contract('ZunamiElasticVault', function (accounts) {
             await this.vault.grantRole(REBALANCER_ROLE, holder)
 
             expect(await this.vault.previewWithdraw(parseToken(100))).to.be.bignumber.equal(
-                "66666666666666666666"
+                "66666666666666666667"
             );
 
             expect(await this.token.balanceOf(other)).to.be.bignumber.equal("0");
