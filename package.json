@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "lint": "prettier --write 'contracts/**/*.sol' && prettier --write 'scripts/**/*.js' && prettier --write 'test/**/*.ts' && prettier --write 'test/**/*.js'",
+    "lint": "prettier --write 'contracts/**/*.sol' && prettier --write 'scripts/**/*.js' && prettier --write 'test/**/*.js'",
     "lint:contracts": "prettier --write 'contracts/**/*.sol'",
     "compile": "hardhat clean && hardhat compile",
     "contract:size": "hardhat size-contracts;",

@@ -17,8 +17,8 @@ contract AssetPriceOracleMock is IAssetPriceOracle {
 
     function lpPrice() public view returns (uint256) {
         //burn extra gas
-        uint mock = 0;
-        for(uint256 i = 0; i < 1000; i++) {
+        uint256 mock = 0;
+        for (uint256 i = 0; i < 1000; i++) {
             mock = uint256(keccak256(abi.encodePacked(block.number + i)));
         }
 

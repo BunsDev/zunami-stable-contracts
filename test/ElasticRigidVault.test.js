@@ -2,7 +2,7 @@ const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test
 const { expect } = require('chai');
 
 const ERC20DecimalsMock = artifacts.require('ERC20DecimalsMock');
-const ZunamiElasticVaultMock = artifacts.require('ZunamiElasticVaultMock');
+const ZunamiElasticRigidVaultMock = artifacts.require('ZunamiElasticRigidVaultMock');
 const AssetPriceOracleMock = artifacts.require('AssetPriceOracleMock');
 
 const one = new BN(10).pow(new BN(18));
@@ -12,7 +12,7 @@ const parseShare = (share) => new BN(share).mul(one);
 const mulNorm = (amount, price) => new BN(amount).mul(new BN(price)).div(one);
 const divNorm = (amount, price) => new BN(amount).mul(one).div(new BN(price));
 
-contract('ElasticVault', function (accounts) {
+contract('ElasticRigidVault', function (accounts) {
     const [holder, recipient, spender, other, user1, user2] = accounts;
 
     const name = 'My Token';
@@ -25,7 +25,7 @@ contract('ElasticVault', function (accounts) {
         this.assetPricer = await AssetPriceOracleMock.new();
         await this.assetPricer.setAssetPriceInternal(initialPrice);
         this.token = await ERC20DecimalsMock.new(name, symbol, 18);
-        this.vault = await ZunamiElasticVaultMock.new(
+        this.vault = await ZunamiElasticRigidVaultMock.new(
             this.token.address,
             this.assetPricer.address,
             name + ' Vault',
@@ -70,7 +70,7 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: "1500000000000000000", // parseShare(1.5),
+                value: '1500000000000000000', // parseShare(1.5),
             });
         });
 
@@ -122,7 +122,7 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: "1500000000000000000",//parseShare(1.5),
+                value: '1500000000000000000', //parseShare(1.5),
             });
         });
 
@@ -164,13 +164,13 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: holder,
                 to: this.vault.address,
-                value: "0",
+                value: '0',
             });
 
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: "0",
+                value: '0',
             });
 
             // Cannot deposit more than 0
@@ -230,7 +230,7 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
                 from: constants.ZERO_ADDRESS,
                 to: recipient,
-                value: "1500000000000000000",// parseShare(1.5),
+                value: '1500000000000000000', // parseShare(1.5),
             });
         });
 
@@ -249,7 +249,7 @@ contract('ElasticVault', function (accounts) {
             await expectEvent.inTransaction(tx, this.token, 'Transfer', {
                 from: this.vault.address,
                 to: recipient,
-                value: "666666666666666666",
+                value: '666666666666666666',
             });
 
             await expectEvent.inTransaction(tx, this.vault, 'Transfer', {
@@ -277,7 +277,7 @@ contract('ElasticVault', function (accounts) {
         await this.assetPricer.setAssetPriceInternal(initialPrice);
 
         this.token = await ERC20DecimalsMock.new(name, symbol, 18);
-        this.vault = await ZunamiElasticVaultMock.new(
+        this.vault = await ZunamiElasticRigidVaultMock.new(
             this.token.address,
             this.assetPricer.address,
             name + ' Vault',
