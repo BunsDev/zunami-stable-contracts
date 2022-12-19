@@ -12,7 +12,7 @@ contract ZunamiStrategyMock is IZunamiStrategy {
         tokens = _tokens;
     }
 
-    function deposit(uint256[3] memory amounts) external returns (uint256) {
+    function deposit(uint256[3] memory amounts) external view returns (uint256) {
         require(
             IERC20(tokens[0]).balanceOf(address(this)) >= amounts[0] &&
                 IERC20(tokens[1]).balanceOf(address(this)) >= amounts[1] &&

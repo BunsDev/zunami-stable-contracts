@@ -2,13 +2,14 @@
 pragma solidity ^0.8.0;
 
 import '@openzeppelin/contracts/utils/Context.sol';
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import '@openzeppelin/contracts/utils/math/Math.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 import './interfaces/IRedistributor.sol';
 import './interfaces/IZunami.sol';
 
-contract ZunamiRedistributor is IRedistributor, Context {
+contract ZunamiRedistributor is IRedistributor, Context, ReentrancyGuard {
     using Math for uint256;
 
     uint8 public constant DEFAULT_DECIMALS = 18;
@@ -23,13 +24,13 @@ contract ZunamiRedistributor is IRedistributor, Context {
         zunami = IZunami(_zunami);
     }
 
-    function requestRedistribution(uint256 nominal) external {
+    function requestRedistribution(uint256 nominal) external nonReentrant() {
         SafeERC20.safeTransferFrom(IERC20(zunami), _msgSender(), address(this), nominal);
         SafeERC20.safeApprove(IERC20(zunami), address(zunami), nominal);
         zunami.delegateWithdrawal(nominal, [uint256(0), 0, 0]);
     }
 
-    function redistribute() external {
+    function redistribute() external nonReentrant() {
         uint256[3] memory balances = tokensBalances();
         require(balances[0] > 0 || balances[1] > 0 || balances[2] > 0, 'Zero tokens balances');
 
@@ -68,7 +69,7 @@ contract ZunamiRedistributor is IRedistributor, Context {
 
     function calcBalancesProportion(uint256[3] memory balances, uint256 proportion)
         public
-        view
+        pure
         returns (uint256[3] memory)
     {
         return [

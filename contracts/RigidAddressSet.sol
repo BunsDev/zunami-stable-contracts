@@ -18,13 +18,19 @@ contract RigidAddressSet {
     }
 
     function _addRigidAddress(address _rigidAddress) internal {
-        _rigidAddresses.add(_rigidAddress);
-        emit AddedRigidAddress(_rigidAddress);
+        if(_rigidAddresses.add(_rigidAddress)) {
+            emit AddedRigidAddress(_rigidAddress);
+        } else {
+            revert("RigidAddressSet: add existed address");
+        }
     }
 
     function _removeRigidAddress(address _rigidAddress) internal {
-        _rigidAddresses.remove(_rigidAddress);
-        emit RemovedRigidAddress(_rigidAddress);
+        if(_rigidAddresses.remove(_rigidAddress)){
+            emit RemovedRigidAddress(_rigidAddress);
+        } else {
+            revert("RigidAddressSet: remove un-existed address");
+        }
     }
 
     function _containRigidAddress(address _rigidAddress) internal view returns (bool) {

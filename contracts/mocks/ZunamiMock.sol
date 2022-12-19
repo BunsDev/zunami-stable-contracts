@@ -29,7 +29,7 @@ contract ZunamiMock is ERC20, IZunami {
         _poolInfo[pid].lpShares = lpShares;
     }
 
-    function delegateWithdrawal(uint256 lpShares, uint256[3] memory tokenAmounts) external {
+    function delegateWithdrawal(uint256 lpShares, uint256[3] memory) external {
         SafeERC20.safeTransferFrom(IERC20(address(this)), msg.sender, address(this), lpShares);
     }
 

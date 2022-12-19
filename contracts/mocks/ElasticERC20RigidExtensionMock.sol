@@ -19,7 +19,7 @@ contract ElasticERC20RigidExtensionMock is
         address initialAccount,
         uint256 initialNominalBalance,
         uint256 initialBalance
-    ) payable ElasticERC20(name, symbol) PricableAssetMock(priceOracle) {
+    ) ElasticERC20(name, symbol) PricableAssetMock(priceOracle) {
         cacheAssetPrice();
 
         if (initialAccount != address(0)) {

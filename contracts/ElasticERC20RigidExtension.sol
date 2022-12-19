@@ -10,11 +10,11 @@ import './ElasticERC20.sol';
 abstract contract ElasticERC20RigidExtension is ElasticERC20 {
     using Math for uint256;
 
-    mapping(address => uint256) private _balances;
+    mapping(address => uint256) private _balancesRigid;
 
-    mapping(address => mapping(address => uint256)) private _allowances;
+    mapping(address => mapping(address => uint256)) private _allowancesRigid;
 
-    uint256 private _totalSupply;
+    uint256 private _totalSupplyRigid;
 
     uint256 private _lockedNominal;
 
@@ -24,7 +24,7 @@ abstract contract ElasticERC20RigidExtension is ElasticERC20 {
     function containRigidAddress(address _rigidAddress) public view virtual returns (bool);
 
     function totalSupplyRigid() public view returns (uint256) {
-        return _totalSupply;
+        return _totalSupplyRigid;
     }
 
     function lockedNominalRigid() public view returns (uint256) {
@@ -32,13 +32,13 @@ abstract contract ElasticERC20RigidExtension is ElasticERC20 {
     }
 
     function totalSupply() public view virtual override returns (uint256) {
-        return super.totalSupply() + _totalSupply;
+        return super.totalSupply() + _totalSupplyRigid;
     }
 
     function balanceOf(address account) public view virtual override returns (uint256) {
         if (!containRigidAddress(account)) return super.balanceOf(account);
 
-        return _balances[account];
+        return _balancesRigid[account];
     }
 
     function allowance(address owner, address spender)
@@ -50,12 +50,12 @@ abstract contract ElasticERC20RigidExtension is ElasticERC20 {
     {
         if (!containRigidAddress(owner)) return super.allowance(owner, spender);
 
-        return _allowances[owner][spender];
+        return _allowancesRigid[owner][spender];
     }
 
     function _convertRigidToElasticBalancePartially(address owner, uint256 amount) internal {
-        _totalSupply -= amount;
-        _balances[owner] -= amount;
+        _totalSupplyRigid -= amount;
+        _balancesRigid[owner] -= amount;
 
         uint256 nominal = _convertToNominalWithCaching(amount, Math.Rounding.Up);
         _lockedNominal -= nominal;
@@ -71,8 +71,8 @@ abstract contract ElasticERC20RigidExtension is ElasticERC20 {
 
         _lockedNominal += nominal;
 
-        _totalSupply += amount;
-        _balances[owner] += amount;
+        _totalSupplyRigid += amount;
+        _balancesRigid[owner] += amount;
 
         emit ConvertedToRigid(owner, amount, nominal);
     }
@@ -161,12 +161,12 @@ abstract contract ElasticERC20RigidExtension is ElasticERC20 {
         require(from != address(0), 'RigidElasticERC20: transfer from the zero address');
         require(to != address(0), 'RigidElasticERC20: transfer to the zero address');
 
-        uint256 fromBalance = _balances[from];
+        uint256 fromBalance = _balancesRigid[from];
         require(fromBalance >= amount, 'RigidElasticERC20: transfer amount exceeds balance');
         unchecked {
-            _balances[from] = fromBalance - amount;
+            _balancesRigid[from] = fromBalance - amount;
         }
-        _balances[to] += amount;
+        _balancesRigid[to] += amount;
 
         emit Transfer(from, to, amount);
     }
@@ -179,7 +179,7 @@ abstract contract ElasticERC20RigidExtension is ElasticERC20 {
         require(owner != address(0), 'RigidElasticERC20: approve from the zero address');
         require(spender != address(0), 'RigidElasticERC20: approve to the zero address');
 
-        _allowances[owner][spender] = amount;
+        _allowancesRigid[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }
 
