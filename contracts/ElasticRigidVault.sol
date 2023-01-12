@@ -56,10 +56,6 @@ abstract contract ElasticRigidVault is ElasticERC20RigidExtension, IElasticVault
         return _convertFromNominalCached(nominal, Math.Rounding.Down);
     }
 
-    function _previewDepositWithCaching(uint256 nominal) internal virtual returns (uint256) {
-        return _convertFromNominalWithCaching(nominal, Math.Rounding.Down);
-    }
-
     function previewWithdraw(uint256 value) public view virtual override returns (uint256) {
         uint256 nominalFee = _calcFee(
             _msgSender(),
@@ -68,14 +64,10 @@ abstract contract ElasticRigidVault is ElasticERC20RigidExtension, IElasticVault
         return _convertToNominalCached(value, Math.Rounding.Down) - nominalFee;
     }
 
-    function _previewWithdrawWithCaching(uint256 value) internal virtual returns (uint256) {
-        return _convertToNominalWithCaching(value, Math.Rounding.Down);
-    }
-
     function deposit(uint256 nominal, address receiver) public virtual override returns (uint256) {
         require(nominal <= maxDeposit(receiver), 'ElasticVault: deposit more than max');
 
-        uint256 value = _previewDepositWithCaching(nominal);
+        uint256 value = previewDeposit(nominal);
         _deposit(_msgSender(), receiver, value, nominal);
 
         return nominal;
@@ -86,7 +78,7 @@ abstract contract ElasticRigidVault is ElasticERC20RigidExtension, IElasticVault
         address receiver,
         address owner
     ) public virtual override returns (uint256) {
-        uint256 nominal = _previewWithdrawWithCaching(value);
+        uint256 nominal = _convertToNominalCached(value, Math.Rounding.Down);
         require(nominal <= balanceOfNominal(owner), 'ElasticVault: withdraw more than max');
 
         _withdraw(_msgSender(), receiver, owner, value, nominal);

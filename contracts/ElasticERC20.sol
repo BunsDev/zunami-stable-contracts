@@ -114,23 +114,14 @@ abstract contract ElasticERC20 is Context, PricableAsset, IERC20Metadata {
         override
         returns (uint256)
     {
-        // don't cache price
         return _convertFromNominalCached(_allowances[owner][spender], Math.Rounding.Down);
-    }
-
-    function _allowanceWithCaching(address owner, address spender)
-        internal
-        virtual
-        returns (uint256)
-    {
-        return _convertFromNominalWithCaching(_allowances[owner][spender], Math.Rounding.Down);
     }
 
     function transfer(address to, uint256 amount) public virtual override returns (bool) {
         _transferElastic(
             _msgSender(),
             to,
-            _convertToNominalWithCaching(amount, Math.Rounding.Up),
+            _convertToNominalCached(amount, Math.Rounding.Up),
             amount
         );
         return true;
@@ -146,7 +137,7 @@ abstract contract ElasticERC20 is Context, PricableAsset, IERC20Metadata {
         address to,
         uint256 amount
     ) public virtual override returns (bool) {
-        uint256 nominalAmount = _convertToNominalWithCaching(amount, Math.Rounding.Up);
+        uint256 nominalAmount = _convertToNominalCached(amount, Math.Rounding.Up);
         _spendAllowanceElastic(from, _msgSender(), amount);
         _transferElastic(from, to, nominalAmount, amount);
         return true;
@@ -154,7 +145,7 @@ abstract contract ElasticERC20 is Context, PricableAsset, IERC20Metadata {
 
     function increaseAllowance(address spender, uint256 addedValue) public virtual returns (bool) {
         address owner = _msgSender();
-        _approveElastic(owner, spender, _allowanceWithCaching(owner, spender) + addedValue);
+        _approveElastic(owner, spender, allowance(owner, spender) + addedValue);
         return true;
     }
 
@@ -164,7 +155,7 @@ abstract contract ElasticERC20 is Context, PricableAsset, IERC20Metadata {
         returns (bool)
     {
         address owner = _msgSender();
-        uint256 currentAllowance = _allowanceWithCaching(owner, spender);
+        uint256 currentAllowance = allowance(owner, spender);
         require(
             currentAllowance >= subtractedValue,
             'ElasticERC20: decreased allowance below zero'
@@ -232,7 +223,7 @@ abstract contract ElasticERC20 is Context, PricableAsset, IERC20Metadata {
         require(owner != address(0), 'ElasticERC20: approve from the zero address');
         require(spender != address(0), 'ElasticERC20: approve to the zero address');
 
-        _allowances[owner][spender] = _convertToNominalWithCaching(value, Math.Rounding.Up);
+        _allowances[owner][spender] = _convertToNominalCached(value, Math.Rounding.Up);
         emit Approval(owner, spender, value);
     }
 
@@ -241,7 +232,7 @@ abstract contract ElasticERC20 is Context, PricableAsset, IERC20Metadata {
         address spender,
         uint256 value
     ) internal virtual {
-        uint256 currentAllowance = _allowanceWithCaching(owner, spender);
+        uint256 currentAllowance = allowance(owner, spender);
         if (currentAllowance != type(uint256).max) {
             require(currentAllowance >= value, 'ElasticERC20: insufficient allowance');
             unchecked {
