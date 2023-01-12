@@ -54,15 +54,29 @@ abstract contract ElasticERC20RigidExtension is ElasticERC20 {
     }
 
     function _convertRigidToElasticBalancePartially(address owner, uint256 amount) internal {
+        uint256 nominal = _convertToNominalCached(amount, Math.Rounding.Up);
+        (bool enoughCollateralForRigidSupply, uint256 totalRigidNominal) = _checkEnoughCollateralForRigidSupply();
+        if(!enoughCollateralForRigidSupply) {
+            nominal = nominal.mulDiv(lockedNominalRigid(), totalRigidNominal, Math.Rounding.Down);
+        }
+
         _totalSupplyRigid -= amount;
         _balancesRigid[owner] -= amount;
 
-        uint256 nominal = _convertToNominalCached(amount, Math.Rounding.Up);
         _lockedNominal -= nominal;
 
         _increaseBalanceElastic(owner, nominal);
 
         emit ConvertedToElastic(owner, amount, nominal);
+    }
+
+    function _checkEnoughCollateralForRigidSupply() internal returns(bool, uint256) {
+        uint256 totalRigidNominal = _convertToNominalCached(
+            totalSupplyRigid(),
+            Math.Rounding.Up
+        );
+
+        return (lockedNominalRigid() >= totalRigidNominal, totalRigidNominal);
     }
 
     function _convertElasticToRigidBalancePartially(address owner, uint256 amount) internal {

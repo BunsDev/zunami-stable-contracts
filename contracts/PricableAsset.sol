@@ -23,11 +23,8 @@ abstract contract PricableAsset {
 
     function cacheAssetPrice() public virtual {
         _blockCached = block.number;
-        uint256 currentAssetPrice = assetPrice();
-        if (_assetPriceCached < currentAssetPrice) {
-            _assetPriceCached = currentAssetPrice;
-            emit CachedAssetPrice(_blockCached, _assetPriceCached);
-        }
+        _assetPriceCached = assetPrice();
+        emit CachedAssetPrice(_blockCached, _assetPriceCached);
     }
 
     function _cacheAssetPriceByBlock() internal virtual {

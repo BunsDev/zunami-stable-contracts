@@ -43,23 +43,23 @@ describe('PricableAsset mock tests', async () => {
         expect(await pricableAssetContract.assetPrice()).to.eq(utils.parseEther('555'));
     });
 
-    it('should return cached price when current price decreased ', async () => {
-        const initialPrice = utils.parseEther('555');
-
-        // Init price
-        await mockAssetPriceOracle.mock.lpPrice.returns(initialPrice);
-        await expect(pricableAssetContract.cacheAssetPrice())
-            .to.emit(pricableAssetContract, 'CachedAssetPrice')
-            .withArgs((await provider.getBlockNumber()) + 1, initialPrice);
-
-        // Decrease price
-        const newPrice = utils.parseEther('444');
-        await mockAssetPriceOracle.mock.lpPrice.returns(newPrice);
-
-        // Should return cached price
-        await pricableAssetContract.cacheAssetPrice();
-        expect(await pricableAssetContract.assetPriceCached()).to.eq(initialPrice);
-    });
+    // it('should return cached price when current price decreased ', async () => {
+    //     const initialPrice = utils.parseEther('555');
+    //
+    //     // Init price
+    //     await mockAssetPriceOracle.mock.lpPrice.returns(initialPrice);
+    //     await expect(pricableAssetContract.cacheAssetPrice())
+    //         .to.emit(pricableAssetContract, 'CachedAssetPrice')
+    //         .withArgs((await provider.getBlockNumber()) + 1, initialPrice);
+    //
+    //     // Decrease price
+    //     const newPrice = utils.parseEther('444');
+    //     await mockAssetPriceOracle.mock.lpPrice.returns(newPrice);
+    //
+    //     // Should return cached price
+    //     await pricableAssetContract.cacheAssetPrice();
+    //     expect(await pricableAssetContract.assetPriceCached()).to.eq(initialPrice);
+    // });
 
     // In this case block numbers are different, _c_cachedBlock = 0 but block.number > 0
     it('should return initial zero price for operations in one block', async () => {
