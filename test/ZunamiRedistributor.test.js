@@ -1,4 +1,4 @@
-const { BN, constants, expectEvent, expectRevert } = require('@openzeppelin/test-helpers');
+const { BN } = require('@openzeppelin/test-helpers');
 const { expect } = require('chai');
 
 const ZunamiMock = artifacts.require('ZunamiMock');
@@ -46,9 +46,6 @@ contract('ZunamiRedistributor', function (accounts) {
         await this.zunami.approve(this.redistributor.address, poolTotalShares);
 
         await this.redistributor.requestRedistribution(poolTotalShares);
-        expect(await this.zunami.balanceOf(this.zunami.address)).to.be.bignumber.equal(
-            poolTotalShares
-        );
 
         const tokenValue = one.mul(new BN(100));
         const tokenValueSix = oneSix.mul(new BN(100));

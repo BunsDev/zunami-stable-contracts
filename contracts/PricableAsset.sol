@@ -21,6 +21,13 @@ abstract contract PricableAsset {
         return _blockCached;
     }
 
+    /**
+     * @dev Being the main rebasing mechanism, this function allows anyone
+     to sync cached priced with the oracle by minting needed supply.
+     An arbitrary user can arbitrage by sandwiched trade-rebase-trade operations.
+     Any contracts wanting to support UZD tokens should take into account this possibility
+     of potentially non-synced price.
+     */
     function cacheAssetPrice() public virtual {
         _blockCached = block.number;
         uint256 currentAssetPrice = assetPrice();

@@ -8,7 +8,7 @@ import './interfaces/IElasticVault.sol';
 import './ElasticERC20RigidExtension.sol';
 
 /**
- * @dev OpenZeppelin v4.7.0 ERC4626 fork
+ * @dev Based on OpenZeppelin v4.7.0 ERC4626, but withdraw is in fact redeem with other simplifications.
  */
 abstract contract ElasticRigidVault is ElasticERC20RigidExtension, IElasticVault {
     using Math for uint256;
@@ -57,11 +57,14 @@ abstract contract ElasticRigidVault is ElasticERC20RigidExtension, IElasticVault
     }
 
     function previewWithdraw(uint256 value) public view virtual override returns (uint256) {
+        uint256 nominal = _convertToNominalCached(value, Math.Rounding.Down);
+
         uint256 nominalFee = _calcFee(
             _msgSender(),
-            _convertToNominalCached(value, Math.Rounding.Down)
+            nominal
         );
-        return _convertToNominalCached(value, Math.Rounding.Down) - nominalFee;
+
+        return nominal - nominalFee;
     }
 
     function deposit(uint256 nominal, address receiver) public virtual override returns (uint256) {
@@ -70,7 +73,7 @@ abstract contract ElasticRigidVault is ElasticERC20RigidExtension, IElasticVault
         uint256 value = previewDeposit(nominal);
         _deposit(_msgSender(), receiver, value, nominal);
 
-        return nominal;
+        return value;
     }
 
     function withdraw(
@@ -112,12 +115,12 @@ abstract contract ElasticRigidVault is ElasticERC20RigidExtension, IElasticVault
     ) internal virtual {
         _beforeDeposit(caller, receiver, value, nominal);
 
-        // If _asset is ERC777, `transferFrom` can trigger a reenterancy BEFORE the transfer happens through the
+        // If _asset is ERC777, `transferFrom` can trigger a reentrancy BEFORE the transfer happens through the
         // `tokensToSend` hook. On the other hand, the `tokenReceived` hook, that is triggered after the transfer,
         // calls the vault, which is assumed not malicious.
         //
         // Conclusion: we need to do the transfer before we mint so that any reentrancy would happen before the
-        // value are transfered and before the nominal are minted, which is a valid state.
+        // value are transferred and before the nominal are minted, which is a valid state.
         // slither-disable-next-line reentrancy-no-eth
         SafeERC20.safeTransferFrom(IERC20Metadata(asset()), caller, address(this), nominal);
         _mintElastic(receiver, nominal, value);

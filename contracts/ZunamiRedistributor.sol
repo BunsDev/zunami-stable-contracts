@@ -26,7 +26,6 @@ contract ZunamiRedistributor is IRedistributor, Context, ReentrancyGuard {
 
     function requestRedistribution(uint256 nominal) external nonReentrant() {
         SafeERC20.safeTransferFrom(IERC20(zunami), _msgSender(), address(this), nominal);
-        SafeERC20.safeApprove(IERC20(zunami), address(zunami), nominal);
         zunami.delegateWithdrawal(nominal, [uint256(0), 0, 0]);
     }
 

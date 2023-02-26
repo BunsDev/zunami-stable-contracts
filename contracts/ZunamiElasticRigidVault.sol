@@ -78,7 +78,7 @@ abstract contract ZunamiElasticRigidVault is AccessControl, ElasticRigidVault, R
         dailyDepositLimit = dailyDepositLimit_;
 
         dailyDepositTotal = 0;
-        dailyDepositCountingBlock = dailyDepositDuration > 0 ? block.number : 0;
+        dailyDepositCountingBlock = dailyDepositDuration_ > 0 ? block.number : 0;
 
         emit DailyDepositParamsChanged(dailyDepositDuration_, dailyDepositLimit_);
     }
@@ -91,7 +91,7 @@ abstract contract ZunamiElasticRigidVault is AccessControl, ElasticRigidVault, R
         dailyWithdrawLimit = dailyWithdrawLimit_;
 
         dailyWithdrawTotal = 0;
-        dailyWithdrawCountingBlock = dailyWithdrawDuration > 0 ? block.number : 0;
+        dailyWithdrawCountingBlock = dailyWithdrawDuration_ > 0 ? block.number : 0;
 
         emit DailyWithdrawParamsChanged(dailyWithdrawDuration_, dailyWithdrawLimit_);
     }
@@ -116,12 +116,14 @@ abstract contract ZunamiElasticRigidVault is AccessControl, ElasticRigidVault, R
         uint256 value,
         uint256
     ) internal override {
-        if (dailyDepositDuration > 0 && !hasRole(REBALANCER_ROLE, caller)) {
-            if (block.number > dailyDepositCountingBlock + dailyDepositDuration) {
-                dailyDepositTotal = 0;
+        uint256 dailyDuration = dailyDepositDuration;
+        if (dailyDuration > 0 && !hasRole(REBALANCER_ROLE, caller)) {
+            if (block.number > dailyDepositCountingBlock + dailyDuration) {
+                dailyDepositTotal = value;
                 dailyDepositCountingBlock = block.number;
+            } else {
+                dailyDepositTotal += value;
             }
-            dailyDepositTotal += value;
             require(dailyDepositTotal <= dailyDepositLimit, 'Daily deposit limit overflow');
         }
     }
@@ -133,12 +135,14 @@ abstract contract ZunamiElasticRigidVault is AccessControl, ElasticRigidVault, R
         uint256 value,
         uint256
     ) internal override {
-        if (dailyWithdrawDuration > 0 && !hasRole(REBALANCER_ROLE, caller)) {
-            if (block.number > dailyWithdrawCountingBlock + dailyWithdrawDuration) {
-                dailyWithdrawTotal = 0;
+        uint256 dailyDuration = dailyWithdrawDuration;
+        if (dailyDuration > 0 && !hasRole(REBALANCER_ROLE, caller)) {
+            if (block.number > dailyWithdrawCountingBlock + dailyDuration) {
+                dailyWithdrawTotal = value;
                 dailyWithdrawCountingBlock = block.number;
+            } else {
+                dailyWithdrawTotal += value;
             }
-            dailyWithdrawTotal += value;
             require(dailyWithdrawTotal <= dailyWithdrawLimit, 'Daily withdraw limit overflow');
         }
     }
@@ -150,8 +154,9 @@ abstract contract ZunamiElasticRigidVault is AccessControl, ElasticRigidVault, R
         returns (uint256 nominalFee)
     {
         nominalFee = 0;
-        if (withdrawFee > 0 && !hasRole(REBALANCER_ROLE, caller)) {
-            nominalFee = nominal.mulDiv(withdrawFee, FEE_DENOMINATOR, Math.Rounding.Down);
+        uint256 withdrawFee_ = withdrawFee;
+        if (withdrawFee_ > 0 && !hasRole(REBALANCER_ROLE, caller)) {
+            nominalFee = nominal.mulDiv(withdrawFee_, FEE_DENOMINATOR, Math.Rounding.Down);
         }
     }
 
@@ -195,16 +200,21 @@ abstract contract ZunamiElasticRigidVault is AccessControl, ElasticRigidVault, R
             Math.Rounding.Up
         );
 
+        uint256 lockedNominalRigid_ = lockedNominalRigid();
         require(
-            lockedNominalRigid() >= totalRigidNominal,
+            lockedNominalRigid_ >= totalRigidNominal,
             'Wrong redistribution total nominal balance'
         );
 
-        uint256 nominal = lockedNominalRigid() - totalRigidNominal;
+        uint256 nominal;
+        unchecked {
+            nominal = lockedNominalRigid_ - totalRigidNominal;
+        }
 
         _decreaseLockedNominalRigidBy(nominal);
 
-        SafeERC20.safeIncreaseAllowance(IERC20Metadata(asset()), address(redistributor), nominal);
-        redistributor.requestRedistribution(nominal);
+        IRedistributor redistributor_ = redistributor;
+        SafeERC20.safeIncreaseAllowance(IERC20Metadata(asset()), address(redistributor_), nominal);
+        redistributor_.requestRedistribution(nominal);
     }
 }
